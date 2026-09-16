@@ -1,5 +1,7 @@
 'use client'
 
+import { Logo } from '@/components/logo'
+import type { UserProfile } from '@/lib/api'
 import {
   Bot,
   ChevronDown,
@@ -8,72 +10,104 @@ import {
   Settings,
   TrendingUp,
   Utensils,
+  X,
 } from 'lucide-react'
-import { Logo } from './Logo'
-import type { UserProfile } from '@/lib/api'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
-export type AppPage = 'Dashboard' | 'Workouts' | 'Nutrition' | 'Progress' | 'AI Coach' | 'Settings'
-
-const navItems: { label: AppPage; icon: React.ElementType }[] = [
-  { label: 'Dashboard', icon: LayoutDashboard },
-  { label: 'Workouts',  icon: Dumbbell },
-  { label: 'Nutrition', icon: Utensils },
-  { label: 'Progress',  icon: TrendingUp },
-  { label: 'AI Coach',  icon: Bot },
+export const NAV_ITEMS = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Workouts',  href: '/workouts',  icon: Dumbbell },
+  { label: 'Nutrition', href: '/nutrition', icon: Utensils },
+  { label: 'Progress',  href: '/progress',  icon: TrendingUp },
+  { label: 'AI Coach',  href: '/coach',     icon: Bot },
 ]
 
 interface SidebarProps {
-  activePage: AppPage
-  onNavigate: (page: AppPage) => void
   user: UserProfile | null
+  onClose?: () => void
 }
 
-export function Sidebar({ activePage, onNavigate, user }: SidebarProps) {
-  return (
-    <aside className="hidden w-[238px] shrink-0 flex-col border-r border-slate-200/80 bg-white px-5 py-7 lg:flex">
-      <Logo />
+export function Sidebar({ user, onClose }: SidebarProps) {
+  const pathname = usePathname()
 
-      <nav className="mt-12 space-y-1" aria-label="Main navigation">
-        {navItems.map((item) => {
-          const active = activePage === item.label
+  return (
+    <aside
+      className="flex h-full w-[238px] flex-col px-4 py-6"
+      style={{
+        background: 'var(--sidebar)',
+        borderRight: '1px solid var(--sidebar-border)',
+      }}
+    >
+      {/* Logo row */}
+      <div className="flex items-center justify-between px-1">
+        <Logo />
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="btn-ghost lg:hidden"
+            aria-label="Close menu"
+          >
+            <X className="size-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Nav links */}
+      <nav className="mt-10 flex-1 space-y-0.5">
+        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(href + '/')
           return (
-            <button
-              key={item.label}
-              onClick={() => onNavigate(item.label)}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-[#eef1ff] text-[#5264eb]'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+            <Link
+              key={href}
+              href={href}
+              onClick={onClose}
+              className={`sidebar-nav-item ${active ? 'active' : ''}`}
             >
-              <item.icon className="size-[18px]" />
-              {item.label}
-            </button>
+              <Icon className="size-[18px] shrink-0" />
+              {label}
+            </Link>
           )
         })}
       </nav>
 
-      <div className="mt-auto space-y-1">
-        <button
-          onClick={() => onNavigate('Settings')}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50"
+      {/* Bottom: settings + user card */}
+      <div className="space-y-0.5 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+        <Link
+          href="/settings"
+          onClick={onClose}
+          className={`sidebar-nav-item ${pathname === '/settings' ? 'active' : ''}`}
         >
-          <Settings className="size-[18px]" />
+          <Settings className="size-[18px] shrink-0" />
           Settings
-        </button>
+        </Link>
 
         {user && (
-          <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-5">
+          <div
+            className="mt-3 flex items-center gap-3 rounded-xl p-2.5"
+            style={{ background: 'var(--background-alt)' }}
+          >
             <div
-              className={`grid size-9 place-items-center rounded-full text-sm font-semibold ${user.avatarColor}`}
+              className="grid size-9 shrink-0 place-items-center rounded-full text-sm font-bold"
+              style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
             >
               {user.avatarInitials}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{user.name}</p>
-              <p className="text-xs text-slate-400">{user.plan} plan</p>
+              <p
+                className="truncate text-sm font-semibold"
+                style={{ color: 'var(--foreground)' }}
+              >
+                {user.name}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
+                {user.plan} plan
+              </p>
             </div>
-            <ChevronDown className="size-4 shrink-0 text-slate-400" />
+            <ChevronDown
+              className="size-4 shrink-0"
+              style={{ color: 'var(--foreground-muted)' }}
+            />
           </div>
         )}
       </div>

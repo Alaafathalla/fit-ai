@@ -3,7 +3,7 @@
 import { CalorieRing, MacroBar } from '@/components/charts'
 import { Shell } from '@/components/shell'
 import { Spinner } from '@/components/spinner'
-import { getDailyStats, getMeals, getTodayNutrition, type Meal } from '@/lib/api'
+import { getDailyStats, getMeals, getTodayNutrition, logMeal, updateHydration, type Meal } from '@/lib/api'
 import { Droplets, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -236,6 +236,7 @@ export default function NutritionPage() {
                         e.currentTarget.style.background = 'var(--primary-light)'
                         e.currentTarget.style.color = 'var(--primary)'
                       }}
+                      onClick={() => logMeal(meal.id).catch(() => {})}
                     >
                       + Add to log
                     </button>
@@ -272,7 +273,11 @@ export default function NutritionPage() {
                     <button
                       key={i}
                       title={`${(i + 1) * GLASS_SIZE} ml`}
-                      onClick={() => setHydration(Math.min(HYDRATION_GOAL, (i + 1) * GLASS_SIZE))}
+                      onClick={() => {
+                        const newVal = Math.min(HYDRATION_GOAL, (i + 1) * GLASS_SIZE)
+                        setHydration(newVal)
+                        updateHydration(newVal).catch(() => {})
+                      }}
                       className="flex-1 rounded-lg py-3 transition-all duration-200 hover:opacity-90 active:scale-95"
                       style={{
                         background: filled ? 'var(--primary)' : 'var(--border)',

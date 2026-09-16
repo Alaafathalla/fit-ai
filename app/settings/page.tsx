@@ -2,17 +2,21 @@
 
 import { Shell } from '@/components/shell'
 import { useTheme } from '@/components/theme-provider'
-import { getUserProfile, type UserProfile } from '@/lib/api'
-import { Check, Moon, Sun } from 'lucide-react'
+import { getUserProfile, updateUserProfile, type UserProfile } from '@/lib/api'
+import { Check, Loader2, Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme()
 
-  const [user, setUser]   = useState<UserProfile | null>(null)
-  const [name, setName]   = useState('')
-  const [goal, setGoal]   = useState('')
-  const [saved, setSaved] = useState(false)
+  const [user, setUser]     = useState<UserProfile | null>(null)
+  const [name, setName]     = useState('')
+  const [email, setEmail]   = useState('')
+  const [goal, setGoal]     = useState('')
+  const [saved, setSaved]   = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
+
   const [notifications, setNotifications] = useState({
     workouts:  true,
     nutrition: true,
@@ -23,13 +27,23 @@ export default function SettingsPage() {
     getUserProfile().then((u) => {
       setUser(u)
       setName(u.name)
+      setEmail(u.email)
       setGoal(u.goal)
     })
   }, [])
 
-  const handleSave = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2200)
+  const handleSave = async () => {
+    setSaving(true)
+    setError('')
+    try {
+      await updateUserProfile({ name, email, goal })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2200)
+    } catch {
+      setError('Failed to save. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const NOTIFICATION_LABELS: Record<
@@ -46,7 +60,7 @@ export default function SettingsPage() {
       <div className="mx-auto max-w-2xl space-y-6 p-5 sm:p-8">
 
         {/* Hero */}
-        <div>
+        <div className="animate-fade-up">
           <p className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>
             Your account
           </p>
@@ -59,7 +73,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Profile */}
-        <section className="card space-y-5 p-6">
+        <section className="animate-fade-up card space-y-5 p-6" style={{ animationDelay: '60ms' }}>
           <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>Profile</h3>
 
           {user && (
@@ -94,7 +108,8 @@ export default function SettingsPage() {
                 Email
               </label>
               <input
-                defaultValue={user?.email}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="input-base w-full px-3.5 py-2.5"
               />
             </div>
@@ -112,7 +127,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Appearance */}
-        <section className="card space-y-4 p-6">
+        <section className="animate-fade-up card space-y-4 p-6" style={{ animationDelay: '120ms' }}>
           <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>Appearance</h3>
           <div className="flex items-center justify-between">
             <div>
@@ -123,7 +138,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors active:scale-95"
               style={{
                 background: 'var(--background-alt)',
                 color: 'var(--foreground)',
@@ -139,7 +154,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Notifications */}
-        <section className="card space-y-4 p-6">
+        <section className="animate-fade-up card space-y-4 p-6" style={{ animationDelay: '160ms' }}>
           <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>Notifications</h3>
           {(Object.keys(notifications) as (keyof typeof notifications)[]).map((key) => (
             <div key={key} className="flex items-center justify-between">
@@ -154,17 +169,13 @@ export default function SettingsPage() {
               <button
                 role="switch"
                 aria-checked={notifications[key]}
-                onClick={() =>
-                  setNotifications((n) => ({ ...n, [key]: !n[key] }))
-                }
-                className="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors"
+                onClick={() => setNotifications((n) => ({ ...n, [key]: !n[key] }))}
+                className="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors active:scale-95"
                 style={{ background: notifications[key] ? 'var(--primary)' : 'var(--border)' }}
               >
                 <span
                   className="pointer-events-none inline-block size-5 rounded-full bg-white shadow-sm transition-transform"
-                  style={{
-                    transform: notifications[key] ? 'translateX(20px)' : 'translateX(0)',
-                  }}
+                  style={{ transform: notifications[key] ? 'translateX(20px)' : 'translateX(0)' }}
                 />
               </button>
             </div>
@@ -172,7 +183,7 @@ export default function SettingsPage() {
         </section>
 
         {/* Plan */}
-        <section className="card space-y-4 p-6">
+        <section className="animate-fade-up card space-y-4 p-6" style={{ animationDelay: '200ms' }}>
           <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>Your plan</h3>
           <div
             className="flex items-center justify-between rounded-xl p-4"
@@ -187,7 +198,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <button
-              className="rounded-xl px-4 py-2 text-sm font-semibold"
+              className="rounded-xl px-4 py-2 text-sm font-semibold active:scale-95"
               style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
             >
               Upgrade to Elite
@@ -196,9 +207,20 @@ export default function SettingsPage() {
         </section>
 
         {/* Save */}
+        {error && (
+          <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
+        )}
         <div className="flex justify-end">
-          <button onClick={handleSave} className="btn-primary gap-2">
-            {saved ? <><Check className="size-4" /> Saved!</> : 'Save changes'}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-primary gap-2 disabled:opacity-60"
+          >
+            {saving
+              ? <><Loader2 className="size-4 animate-spin" /> Saving…</>
+              : saved
+                ? <><Check className="size-4" /> Saved!</>
+                : 'Save changes'}
           </button>
         </div>
       </div>

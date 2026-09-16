@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ─────────────────────────────────────────────────────────────────────
+
+enum WorkoutType {
+  Strength
+  Cardio
+  Mobility
+  HIIT
+}
+
+enum DifficultyLevel {
+  Beginner
+  Intermediate
+  Advanced
+}
+
+enum MealType {
+  Breakfast
+  Lunch
+  Dinner
+  Snack
+}
+
+enum Plan {
+  Free
+  Pro
+  Elite
+}
+
+// ─── Models ────────────────────────────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  avatarInitials  String
+  avatarColor     String   @default("bg-[#ffd9c5] text-[#8d4b2e]")
+  plan            Plan     @default(Free)
+  goal            String   @default("")
+  currentWeight   Float    @default(0)
+  targetWeight    Float    @default(0)
+  streak          Int      @default(0)
+  fitnessScore    Int      @default(0)
+  calorieGoal     Int      @default(2000)
+  createdAt       DateTime @default(now())
+
+  dailyStats       DailyStats[]
+  workoutSessions  WorkoutSession[]
+  mealLogs         MealLog[]
+  chatMessages     ChatMessage[]
+
+  @@map("users")
+}
+
+model Workout {
+  id             String          @id @default(cuid())
+  title          String
+  type           WorkoutType
+  duration       Int             // minutes
+  level          DifficultyLevel
+  calories       Int
+  exercises      Int
+  sets           Int
+  image          String
+  video          String?
+  description    String
+  tags           String[]
+  rating         Float           @default(0)
+  completedCount Int             @default(0)
+  createdAt      DateTime        @default(now())
+
+  sessions WorkoutSession[]
+
+  @@map("workouts")
+}
+
+model Meal {
+  id       String   @id @default(cuid())
+  name     String
+  mealType MealType
+  calories Int
+  protein  Float
+  carbs    Float
+  fat      Float
+  prepTime Int      // minutes
+  image    String
+  tags     String[]
+
+  logs MealLog[]
+
+  @@map("meals")
+}
+
+model DailyStats {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime @db.Date
+  weight         Float    @default(0)
+  calories       Int      @default(0)
+  calorieGoal    Int      @default(2000)
+  workoutMinutes Int      @default(0)
+  steps          Int      @default(0)
+  hydration      Int      @default(0) // ml
+  sleepHours     Float    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_stats")
+}
+
+model WorkoutSession {
+  id          String   @id @default(cuid())
+  userId      String
+  workoutId   String
+  completedAt DateTime @default(now())
+  duration    Int?     // actual minutes
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@map("workout_sessions")
+}
+
+model MealLog {
+  id        String   @id @default(cuid())
+  userId    String
+  mealId    String
+  date      DateTime @db.Date
+  loggedAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@map("meal_logs")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  from      String   // 'ai' | 'user'
+  text      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}

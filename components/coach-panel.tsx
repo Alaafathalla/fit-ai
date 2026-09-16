@@ -1,6 +1,6 @@
 'use client'
 
-import { sendCoachMessage } from '@/lib/api'
+import { getChatHistory, sendCoachMessage } from '@/lib/api'
 import {
   Bot,
   Dumbbell,
@@ -20,21 +20,38 @@ const QUICK_ACTIONS = [
   'Help me sleep better',
 ]
 
+const GREETING: Message = {
+  id: '__greeting__',
+  from: 'ai',
+  text: 'Your recovery looks strong today. Ready for a focused session? Ask me anything about training, nutrition, or recovery.',
+  timestamp: new Date().toISOString(),
+}
+
 interface Message {
+  id: string
   from: 'ai' | 'user'
   text: string
+  timestamp: string
 }
 
 export function CoachPanel({ compact = false }: { compact?: boolean }) {
-  const [input, setInput]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      from: 'ai',
-      text: 'Your recovery looks strong today. Ready for a focused session? Ask me anything about training, nutrition, or recovery.',
-    },
-  ])
+  const [input, setInput]         = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [historyLoaded, setHistoryLoaded] = useState(false)
+  const [messages, setMessages]   = useState<Message[]>([GREETING])
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Load persisted history on mount
+  useEffect(() => {
+    getChatHistory()
+      .then((history) => {
+        if (history.length > 0) {
+          setMessages(history)
+        }
+      })
+      .catch(() => {/* keep greeting if API fails */})
+      .finally(() => setHistoryLoaded(true))
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -43,15 +60,35 @@ export function CoachPanel({ compact = false }: { compact?: boolean }) {
   const send = async (text = input) => {
     if (!text.trim() || loading) return
     setInput('')
-    setMessages((m) => [...m, { from: 'user', text }])
+    // Optimistically add user message
+    const tempUserMsg: Message = {
+      id: `tmp-${Date.now()}`,
+      from: 'user',
+      text,
+      timestamp: new Date().toISOString(),
+    }
+    setMessages((m) => [...m, tempUserMsg])
     setLoading(true)
     try {
       const reply = await sendCoachMessage(text)
-      setMessages((m) => [...m, { from: 'ai', text: reply.text }])
+      // Replace any temp + add real AI reply
+      setMessages((m) => [...m, reply])
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          id: `err-${Date.now()}`,
+          from: 'ai',
+          text: 'Sorry, I had trouble responding. Please try again.',
+          timestamp: new Date().toISOString(),
+        },
+      ])
     } finally {
       setLoading(false)
     }
   }
+
+  const showQuickActions = historyLoaded && messages.length <= 1
 
   return (
     <div
@@ -84,23 +121,17 @@ export function CoachPanel({ compact = false }: { compact?: boolean }) {
             </p>
           </div>
         </div>
-        <span
-          className="flex items-center gap-1.5 text-xs font-medium"
-          style={{ color: 'var(--success)' }}
-        >
-          <span
-            className="size-2 rounded-full"
-            style={{ background: 'var(--success)' }}
-          />
+        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--success)' }}>
+          <span className="size-2 rounded-full" style={{ background: 'var(--success)' }} />
           Online
         </span>
       </div>
 
       {/* Messages */}
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
-        {messages.map((m, i) => (
+        {messages.map((m) => (
           <div
-            key={i}
+            key={m.id}
             className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
               m.from === 'ai' ? 'rounded-tl-sm' : 'ml-auto rounded-tr-sm'
             }`}
@@ -119,21 +150,18 @@ export function CoachPanel({ compact = false }: { compact?: boolean }) {
             className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-3"
             style={{ background: 'var(--background-alt)' }}
           >
-            <Loader2
-              className="size-4 animate-spin"
-              style={{ color: 'var(--foreground-muted)' }}
-            />
+            <Loader2 className="size-4 animate-spin" style={{ color: 'var(--foreground-muted)' }} />
           </div>
         )}
 
         {/* Quick actions — only shown before first user message */}
-        {messages.length === 1 && (
+        {showQuickActions && (
           <div className="flex flex-wrap gap-2 pt-1">
             {QUICK_ACTIONS.map((q) => (
               <button
                 key={q}
                 onClick={() => send(q)}
-                className="rounded-full border px-3 py-1.5 text-xs transition-colors"
+                className="rounded-full border px-3 py-1.5 text-xs transition-colors active:scale-95"
                 style={{ borderColor: 'var(--border)', color: 'var(--foreground-muted)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'var(--primary)'
@@ -177,7 +205,7 @@ export function CoachPanel({ compact = false }: { compact?: boolean }) {
             onClick={() => send()}
             disabled={!input.trim() || loading}
             aria-label="Send message"
-            className="grid size-8 place-items-center rounded-lg text-white transition-opacity disabled:opacity-40"
+            className="grid size-8 place-items-center rounded-lg text-white transition-opacity disabled:opacity-40 active:scale-95"
             style={{ background: 'var(--primary)' }}
           >
             <Send className="size-4" />
@@ -188,7 +216,7 @@ export function CoachPanel({ compact = false }: { compact?: boolean }) {
   )
 }
 
-// ─── Capability chips used on the AI Coach page ───────────────────────────────
+// ─── Capability chips ─────────────────────────────────────────────────────────
 
 export function CoachCapabilities() {
   const chips = [

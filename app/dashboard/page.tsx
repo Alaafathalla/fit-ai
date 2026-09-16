@@ -6,6 +6,7 @@ import { Shell } from '@/components/shell'
 import { Spinner } from '@/components/spinner'
 import { StatCard } from '@/components/stat-card'
 import {
+  completeWorkout,
   getDailyStats,
   getTodayNutrition,
   getUserProfile,
@@ -311,7 +312,15 @@ export default function DashboardPage() {
                       </div>
 
                       <button
-                        onClick={() => setCompleted((c) => !c)}
+                        onClick={async () => {
+                          if (!todayWorkout || completed) return
+                          setCompleted(true)
+                          try {
+                            await completeWorkout(todayWorkout.id)
+                          } catch {
+                            // session still marked locally even if API fails
+                          }
+                        }}
                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95"
                         style={
                           completed

@@ -16,6 +16,7 @@ export interface Workout {
   exercises: number
   sets: number
   image: string
+  video?: string
   description: string
   tags: string[]
   rating: number
@@ -95,7 +96,8 @@ const WORKOUTS: Workout[] = [
     calories: 320,
     exercises: 8,
     sets: 24,
-    image: '/fitai-athlete.png',
+    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=640&q=80',
+    video: 'https://videos.pexels.com/video-files/4761433/4761433-uhd_2560_1440_25fps.mp4',
     description: 'A balanced full-body session targeting all major muscle groups with compound lifts.',
     tags: ['Compound', 'Barbell', 'Hypertrophy'],
     rating: 4.8,
@@ -110,7 +112,8 @@ const WORKOUTS: Workout[] = [
     calories: 410,
     exercises: 6,
     sets: 18,
-    image: '/fitai-athlete.png',
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=640&q=80',
+    video: 'https://videos.pexels.com/video-files/6550900/6550900-uhd_2560_1440_25fps.mp4',
     description: 'High-intensity intervals designed to maximize calorie burn and boost your VO2 max.',
     tags: ['Cardio', 'Fat Burn', 'No Equipment'],
     rating: 4.7,
@@ -125,7 +128,8 @@ const WORKOUTS: Workout[] = [
     calories: 110,
     exercises: 10,
     sets: 10,
-    image: '/fitai-athlete.png',
+    image: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=640&q=80',
+    video: 'https://videos.pexels.com/video-files/5319268/5319268-uhd_2560_1440_25fps.mp4',
     description: 'Gentle flow to open tight hips, shoulders, and hamstrings. Perfect for recovery days.',
     tags: ['Recovery', 'Flexibility', 'Yoga'],
     rating: 4.9,
@@ -140,7 +144,8 @@ const WORKOUTS: Workout[] = [
     calories: 295,
     exercises: 7,
     sets: 21,
-    image: '/fitai-athlete.png',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=640&q=80',
+    video: 'https://videos.pexels.com/video-files/4761429/4761429-uhd_2560_1440_25fps.mp4',
     description: 'Chest, back, shoulders, and arms — build upper-body strength and definition.',
     tags: ['Push', 'Pull', 'Dumbbell'],
     rating: 4.6,
@@ -155,7 +160,8 @@ const WORKOUTS: Workout[] = [
     calories: 180,
     exercises: 9,
     sets: 27,
-    image: '/fitai-athlete.png',
+    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=640&q=80',
+    video: 'https://videos.pexels.com/video-files/5319267/5319267-uhd_2560_1440_25fps.mp4',
     description: 'Build a strong, stable core with targeted exercises for abs, obliques, and lower back.',
     tags: ['Core', 'No Equipment', 'Abs'],
     rating: 4.5,
@@ -170,7 +176,8 @@ const WORKOUTS: Workout[] = [
     calories: 260,
     exercises: 4,
     sets: 4,
-    image: '/fitai-athlete.png',
+    image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=640&q=80',
+    video: 'https://videos.pexels.com/video-files/5319266/5319266-uhd_2560_1440_25fps.mp4',
     description: 'A steady-state cardio session to build endurance and start the day with energy.',
     tags: ['Cardio', 'Endurance', 'Outdoor'],
     rating: 4.4,
@@ -188,7 +195,7 @@ const MEALS: Meal[] = [
     carbs: 48,
     fat: 12,
     prepTime: 10,
-    image: '/placeholder.jpg',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=640&q=80',
     tags: ['Vegan', 'High Protein', 'Quick'],
   },
   {
@@ -200,7 +207,7 @@ const MEALS: Meal[] = [
     carbs: 52,
     fat: 18,
     prepTime: 20,
-    image: '/placeholder.jpg',
+    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=640&q=80',
     tags: ['Omega-3', 'Gluten Free', 'High Protein'],
   },
   {
@@ -212,7 +219,7 @@ const MEALS: Meal[] = [
     carbs: 46,
     fat: 16,
     prepTime: 15,
-    image: '/placeholder.jpg',
+    image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=640&q=80',
     tags: ['Lean Protein', 'Meal Prep'],
   },
   {
@@ -224,7 +231,7 @@ const MEALS: Meal[] = [
     carbs: 26,
     fat: 5,
     prepTime: 5,
-    image: '/placeholder.jpg',
+    image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=640&q=80',
     tags: ['Probiotic', 'Quick', 'High Protein'],
   },
   {
@@ -236,7 +243,7 @@ const MEALS: Meal[] = [
     carbs: 34,
     fat: 18,
     prepTime: 12,
-    image: '/placeholder.jpg',
+    image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=640&q=80',
     tags: ['Healthy Fats', 'Quick'],
   },
   {
@@ -248,7 +255,7 @@ const MEALS: Meal[] = [
     carbs: 44,
     fat: 14,
     prepTime: 25,
-    image: '/placeholder.jpg',
+    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=640&q=80',
     tags: ['Lean Protein', 'Veggie-Rich'],
   },
 ]

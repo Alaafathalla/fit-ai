@@ -23,12 +23,15 @@ import {
   ChevronRight,
   Flame,
   HeartPulse,
+  Pause,
   Play,
   Target,
+  Volume2,
+  VolumeX,
   Zap,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function DashboardPage() {
   const [user, setUser]           = useState<UserProfile | null>(null)
@@ -41,6 +44,11 @@ export default function DashboardPage() {
   } | null>(null)
   const [completed, setCompleted] = useState(false)
   const [loading, setLoading]     = useState(true)
+
+  // video state
+  const videoRef                  = useRef<HTMLVideoElement>(null)
+  const [vidPlaying, setVidPlaying] = useState(false)
+  const [vidMuted,   setVidMuted]   = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -71,12 +79,25 @@ export default function DashboardPage() {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   })
 
+  const togglePlay = () => {
+    const vid = videoRef.current
+    if (!vid) return
+    if (vid.paused) { vid.play().catch(() => {}); setVidPlaying(true) }
+    else            { vid.pause(); setVidPlaying(false) }
+  }
+
+  const toggleMute = () => {
+    if (!videoRef.current) return
+    videoRef.current.muted = !videoRef.current.muted
+    setVidMuted(videoRef.current.muted)
+  }
+
   return (
     <Shell title={user ? `${greeting}, ${user.name}` : greeting} subtitle={dateStr}>
       <div className="p-5 sm:p-8">
 
         {/* Page heading */}
-        <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="animate-fade-up mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm lg:hidden" style={{ color: 'var(--foreground-muted)' }}>
               {dateStr}
@@ -91,7 +112,7 @@ export default function DashboardPage() {
               Small steps every day make big changes.
             </p>
           </div>
-          <Link href="/workouts" className="btn-primary gap-2">
+          <Link href="/workouts" className="btn-primary gap-2 active:scale-95">
             Explore workouts <ArrowRight className="size-4" />
           </Link>
         </div>
@@ -99,7 +120,7 @@ export default function DashboardPage() {
         {loading ? <Spinner /> : (
           <>
             {/* Stat cards */}
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="animate-fade-up grid gap-4 sm:grid-cols-2 xl:grid-cols-4" style={{ animationDelay: '60ms' }}>
               <StatCard
                 label="Current weight"
                 value={`${user?.currentWeight ?? 78.4} kg`}
@@ -135,7 +156,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Charts row */}
-            <div className="mt-6 grid gap-5 xl:grid-cols-2">
+            <div className="animate-fade-up mt-6 grid gap-5 xl:grid-cols-2" style={{ animationDelay: '120ms' }}>
               {/* Weight chart */}
               <div className="card p-5">
                 <div className="flex items-center justify-between">
@@ -184,7 +205,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Today's workout + Nutrition */}
-            <div className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+            <div className="animate-fade-up mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]" style={{ animationDelay: '160ms' }}>
               {/* Workout */}
               <div className="card p-5">
                 <div className="flex items-center justify-between">
@@ -203,22 +224,53 @@ export default function DashboardPage() {
 
                 {todayWorkout && (
                   <div className="mt-5 flex flex-col gap-4 sm:flex-row">
+                    {/* Video thumbnail */}
                     <div
-                      className="relative h-40 overflow-hidden rounded-xl sm:w-44"
+                      className="group relative h-40 overflow-hidden rounded-xl sm:w-44"
                       style={{ background: 'linear-gradient(135deg, var(--primary-light), var(--background-alt))' }}
                     >
                       <img
-                        src="/fitai-athlete.png"
+                        src={todayWorkout.image}
                         alt={todayWorkout.title}
-                        className="h-full w-full object-cover object-top mix-blend-multiply opacity-80"
+                        className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
+                        style={{ opacity: vidPlaying ? 0 : 1 }}
                       />
+                      {todayWorkout.video && (
+                        <video
+                          ref={videoRef}
+                          src={todayWorkout.video}
+                          muted={vidMuted}
+                          loop
+                          playsInline
+                          preload="none"
+                          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
+                          style={{ opacity: vidPlaying ? 1 : 0 }}
+                        />
+                      )}
+                      {/* scrim */}
+                      <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                      {/* play/pause */}
                       <button
-                        aria-label="Preview workout"
-                        className="absolute bottom-3 left-3 grid size-9 place-items-center rounded-full shadow"
+                        onClick={togglePlay}
+                        aria-label={vidPlaying ? 'Pause' : 'Play preview'}
+                        className="absolute bottom-3 left-3 grid size-9 place-items-center rounded-full shadow transition-transform duration-200 group-hover:scale-110"
                         style={{ background: 'var(--card)', color: 'var(--primary)' }}
                       >
-                        <Play className="ml-0.5 size-4 fill-current" />
+                        {vidPlaying
+                          ? <Pause className="size-4 fill-current" />
+                          : <Play  className="ml-0.5 size-4 fill-current" />}
                       </button>
+                      {/* mute toggle */}
+                      {todayWorkout.video && (
+                        <button
+                          onClick={toggleMute}
+                          aria-label={vidMuted ? 'Unmute' : 'Mute'}
+                          className="absolute bottom-3 right-3 grid size-7 place-items-center rounded-full opacity-0 shadow transition-all duration-200 group-hover:opacity-100"
+                          style={{ background: 'rgba(255,255,255,0.88)', color: '#374151' }}
+                        >
+                          {vidMuted ? <VolumeX className="size-3" /> : <Volume2 className="size-3" />}
+                        </button>
+                      )}
                     </div>
 
                     <div className="flex-1">
@@ -260,7 +312,7 @@ export default function DashboardPage() {
 
                       <button
                         onClick={() => setCompleted((c) => !c)}
-                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors"
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95"
                         style={
                           completed
                             ? { background: 'var(--success-light)', color: 'var(--success)' }
@@ -306,7 +358,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Activity heatmap */}
-            <div className="mt-5 card p-5">
+            <div className="animate-fade-up mt-5 card p-5" style={{ animationDelay: '200ms' }}>
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -339,7 +391,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Embedded AI coach */}
-            <div className="mt-5">
+            <div className="animate-fade-up mt-5" style={{ animationDelay: '240ms' }}>
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>
                   AI Coach

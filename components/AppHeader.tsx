@@ -1,8 +1,9 @@
 'use client'
 
 import { Bell, Menu, Search } from 'lucide-react'
-import { Logo } from './Logo'
-import type { AppPage } from './Sidebar'
+import { Logo } from './logo'
+
+type AppPage = string
 
 interface AppHeaderProps {
   title: string

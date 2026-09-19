@@ -7,11 +7,13 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const days = Math.min(parseInt(searchParams.get('days') ?? '7', 10), 90)
 
-  const stats = await prisma.dailyStats.findMany({
-    where: { userId: USER_ID },
-    orderBy: { date: 'asc' },
-    take: days,
-  })
+  const stats = (
+    await prisma.dailyStats.findMany({
+      where: { userId: USER_ID },
+      orderBy: { date: 'desc' },
+      take: days,
+    })
+  ).reverse()
 
   return NextResponse.json(
     stats.map((s) => ({

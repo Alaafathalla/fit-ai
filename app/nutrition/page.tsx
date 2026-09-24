@@ -4,7 +4,7 @@ import { CalorieRing, MacroBar } from '@/components/charts'
 import { Shell } from '@/components/shell'
 import { Spinner } from '@/components/spinner'
 import { getDailyStats, getMeals, getTodayNutrition, logMeal, updateHydration, type Meal } from '@/lib/api'
-import { Droplets, Plus } from 'lucide-react'
+import { Check, Droplets, Loader2, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 const MEAL_TYPES: (Meal['mealType'] | 'All')[] = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack']
@@ -25,6 +25,9 @@ export default function NutritionPage() {
   } | null>(null)
   const [hydration, setHydration]   = useState<number>(0)
   const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState('')
+  const [loggingMealId, setLoggingMealId] = useState<string | null>(null)
+  const [loggedMealId, setLoggedMealId] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([getMeals(), getTodayNutrition(), getDailyStats(1)])
@@ -33,10 +36,45 @@ export default function NutritionPage() {
         setNutrition(n)
         setHydration(s[0]?.hydration ?? 0)
       })
+      .catch(() => setError('Could not load nutrition data. Please try again.'))
       .finally(() => setLoading(false))
   }, [])
 
   const visible = mealFilter === 'All' ? meals : meals.filter((m) => m.mealType === mealFilter)
+
+  const refreshNutrition = async () => {
+    const [nextNutrition, nextStats] = await Promise.all([getTodayNutrition(), getDailyStats(1)])
+    setNutrition(nextNutrition)
+    setHydration(nextStats[0]?.hydration ?? 0)
+  }
+
+  const handleLogMeal = async (mealId: string) => {
+    if (loggingMealId) return
+    setLoggingMealId(mealId)
+    setError('')
+    try {
+      await logMeal(mealId)
+      await refreshNutrition()
+      setLoggedMealId(mealId)
+      window.setTimeout(() => setLoggedMealId((current) => current === mealId ? null : current), 1800)
+    } catch {
+      setError('Could not log that meal. Please try again.')
+    } finally {
+      setLoggingMealId(null)
+    }
+  }
+
+  const handleHydration = async (newValue: number) => {
+    const previous = hydration
+    setHydration(newValue)
+    setError('')
+    try {
+      await updateHydration(newValue)
+    } catch {
+      setHydration(previous)
+      setError('Could not update hydration. Please try again.')
+    }
+  }
 
   // hydration: goal is 2500 ml, split into 8 glasses of ~312 ml
   const HYDRATION_GOAL   = 2500
@@ -63,12 +101,17 @@ export default function NutritionPage() {
               Track your meals and stay on target.
             </p>
           </div>
-          <button className="btn-primary gap-2 active:scale-95">
+          <button
+            className="btn-primary gap-2 active:scale-95"
+            onClick={() => document.getElementById('meal-library')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
             <Plus className="size-4" /> Log a meal
           </button>
         </div>
 
-        {loading ? <Spinner label="Loading nutrition data…" /> : (
+        {loading ? <Spinner label="Loading nutrition data…" /> : error && !nutrition ? (
+          <div className="card p-8 text-center text-sm" style={{ color: 'var(--danger)' }}>{error}</div>
+        ) : (
           <>
             {/* Daily summary */}
             {nutrition && (
@@ -81,7 +124,9 @@ export default function NutritionPage() {
                   <CalorieRing calories={nutrition.calories} goal={nutrition.calorieGoal} />
                   <div className="text-center">
                     <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                      {(nutrition.calorieGoal - nutrition.calories).toLocaleString()} kcal remaining
+                      {nutrition.calories <= nutrition.calorieGoal
+                        ? `${(nutrition.calorieGoal - nutrition.calories).toLocaleString()} kcal remaining`
+                        : `${(nutrition.calories - nutrition.calorieGoal).toLocaleString()} kcal over target`}
                     </p>
                     <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
                       Goal: {nutrition.calorieGoal.toLocaleString()} kcal
@@ -117,9 +162,16 @@ export default function NutritionPage() {
               </div>
             )}
 
+            {error && (
+              <div className="mb-4 rounded-xl px-4 py-3 text-sm" style={{ background: 'var(--danger-light)', color: 'var(--danger)' }}>
+                {error}
+              </div>
+            )}
+
             {/* Meal type filter */}
             <div
-              className="animate-fade-up mb-5 flex gap-2 overflow-x-auto pb-0.5"
+              id="meal-library"
+              className="animate-fade-up mb-5 flex scroll-mt-24 gap-2 overflow-x-auto pb-0.5"
               style={{ animationDelay: '120ms' }}
             >
               {MEAL_TYPES.map((t) => (
@@ -226,19 +278,16 @@ export default function NutritionPage() {
                     </div>
 
                     <button
-                      className="mt-4 w-full rounded-xl py-2 text-sm font-semibold transition-all duration-200 active:scale-95"
+                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold transition-all duration-200 active:scale-95 disabled:opacity-60"
                       style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'var(--primary)'
-                        e.currentTarget.style.color = 'var(--primary-foreground)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'var(--primary-light)'
-                        e.currentTarget.style.color = 'var(--primary)'
-                      }}
-                      onClick={() => logMeal(meal.id).catch(() => {})}
+                      onClick={() => handleLogMeal(meal.id)}
+                      disabled={loggingMealId !== null}
                     >
-                      + Add to log
+                      {loggingMealId === meal.id
+                        ? <><Loader2 className="size-4 animate-spin" /> Adding…</>
+                        : loggedMealId === meal.id
+                          ? <><Check className="size-4" /> Added</>
+                          : '+ Add to log'}
                     </button>
                   </div>
                 </div>
@@ -275,8 +324,7 @@ export default function NutritionPage() {
                       title={`${(i + 1) * GLASS_SIZE} ml`}
                       onClick={() => {
                         const newVal = Math.min(HYDRATION_GOAL, (i + 1) * GLASS_SIZE)
-                        setHydration(newVal)
-                        updateHydration(newVal).catch(() => {})
+                        handleHydration(newVal)
                       }}
                       className="flex-1 rounded-lg py-3 transition-all duration-200 hover:opacity-90 active:scale-95"
                       style={{

@@ -6,7 +6,6 @@ import { Shell } from '@/components/shell'
 import { Spinner } from '@/components/spinner'
 import { StatCard } from '@/components/stat-card'
 import {
-  completeWorkout,
   getDailyStats,
   getTodayNutrition,
   getUserProfile,
@@ -20,7 +19,6 @@ import {
 import {
   Activity,
   ArrowRight,
-  Check,
   ChevronRight,
   Flame,
   HeartPulse,
@@ -43,8 +41,8 @@ export default function DashboardPage() {
     calories: number; calorieGoal: number
     protein: number; carbs: number; fat: number
   } | null>(null)
-  const [completed, setCompleted] = useState(false)
   const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState('')
 
   // video state
   const videoRef                  = useRef<HTMLVideoElement>(null)
@@ -63,8 +61,9 @@ export default function DashboardPage() {
       setStats(s)
       setProgress(p)
       setNutrition(n)
-      setTodayWorkout(w[1] ?? null)
-    }).finally(() => setLoading(false))
+      setTodayWorkout(w[0] ?? null)
+    }).catch(() => setError('Some dashboard data could not be loaded.'))
+      .finally(() => setLoading(false))
   }, [])
 
   const today = stats[stats.length - 1]
@@ -117,6 +116,10 @@ export default function DashboardPage() {
             Explore workouts <ArrowRight className="size-4" />
           </Link>
         </div>
+
+        {error && !loading && (
+          <div className="mb-5 rounded-xl px-4 py-3 text-sm" style={{ background: 'var(--danger-light)', color: 'var(--danger)' }}>{error}</div>
+        )}
 
         {loading ? <Spinner /> : (
           <>
@@ -311,27 +314,13 @@ export default function DashboardPage() {
                         ))}
                       </div>
 
-                      <button
-                        onClick={async () => {
-                          if (!todayWorkout || completed) return
-                          setCompleted(true)
-                          try {
-                            await completeWorkout(todayWorkout.id)
-                          } catch {
-                            // session still marked locally even if API fails
-                          }
-                        }}
+                      <Link
+                        href={`/workouts/${todayWorkout.id}`}
                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95"
-                        style={
-                          completed
-                            ? { background: 'var(--success-light)', color: 'var(--success)' }
-                            : { background: 'var(--foreground)', color: 'var(--background)' }
-                        }
+                        style={{ background: 'var(--foreground)', color: 'var(--background)' }}
                       >
-                        {completed
-                          ? <><Check className="size-4" /> Completed!</>
-                          : <><Play className="size-4 fill-current" /> Start workout</>}
-                      </button>
+                        <Play className="size-4 fill-current" /> Open workout
+                      </Link>
                     </div>
                   </div>
                 )}

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
-const USER_ID = process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
+const USER_ID = process.env.FITAI_USER_ID ?? process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
 
 export async function GET() {
   const today = new Date(); today.setHours(0, 0, 0, 0)

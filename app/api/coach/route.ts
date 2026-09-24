@@ -2,19 +2,9 @@ import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
-const USER_ID = process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
+const USER_ID = process.env.FITAI_USER_ID ?? process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
+const MessageSchema = z.object({ message: z.string().trim().min(1).max(2_000) })
 
-const AI_RESPONSES = [
-  "Great question! Based on your recent training data, I'd recommend adding 10% more volume this week.",
-  "Your recovery looks excellent. You're ready for a high-intensity session today.",
-  "To hit your goal faster, try cycling your carbs — high on training days, moderate on rest days.",
-  "I noticed your sleep average dipped below 7 hours this week. Prioritizing sleep will dramatically boost your gains.",
-  "Your bench press has been plateauing for 2 weeks. Time for a deload — reduce weight by 20% for 5 days.",
-  "Excellent consistency! You've completed 85% of your planned workouts this month.",
-  "Based on your body metrics, I've adjusted your calorie target to 1,950 kcal for optimal fat loss.",
-]
-
-// GET — load history
 export async function GET() {
   const messages = await prisma.chatMessage.findMany({
     where: { userId: USER_ID },
@@ -22,40 +12,81 @@ export async function GET() {
     take: 100,
   })
 
-  return NextResponse.json(
-    messages.map((m) => ({
-      id:        m.id,
-      from:      m.from,
-      text:      m.text,
-      timestamp: m.createdAt.toISOString(),
-    })),
-  )
+  return NextResponse.json(messages.map((message) => ({
+    id: message.id,
+    from: message.from,
+    text: message.text,
+    timestamp: message.createdAt.toISOString(),
+  })))
 }
 
-// POST — send message + get AI reply
-const Schema = z.object({ message: z.string().min(1) })
-
 export async function POST(req: Request) {
-  const body = await req.json()
-  const parsed = Schema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+  const body = await req.json().catch(() => null)
+  const parsed = MessageSchema.safeParse(body)
+  if (!parsed.success) return NextResponse.json({ error: 'Message is required and must be under 2,000 characters.' }, { status: 400 })
 
-  // Persist user message
+  const user = await prisma.user.findUnique({ where: { id: USER_ID } })
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  const latestStats = await prisma.dailyStats.findFirst({
+    where: { userId: USER_ID },
+    orderBy: { date: 'desc' },
+  })
+
   await prisma.chatMessage.create({
     data: { userId: USER_ID, from: 'user', text: parsed.data.message },
   })
 
-  // Generate AI reply (random for now — swap with LLM call here)
-  const aiText = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)]
+  const aiText = buildCoachReply(parsed.data.message, {
+    goal: user.goal,
+    calorieGoal: user.calorieGoal,
+    sleepHours: latestStats?.sleepHours ?? 0,
+    hydration: latestStats?.hydration ?? 0,
+    workoutMinutes: latestStats?.workoutMinutes ?? 0,
+  })
 
-  const aiMsg = await prisma.chatMessage.create({
+  const aiMessage = await prisma.chatMessage.create({
     data: { userId: USER_ID, from: 'ai', text: aiText },
   })
 
   return NextResponse.json({
-    id:        aiMsg.id,
-    from:      'ai',
-    text:      aiMsg.text,
-    timestamp: aiMsg.createdAt.toISOString(),
+    id: aiMessage.id,
+    from: 'ai',
+    text: aiMessage.text,
+    timestamp: aiMessage.createdAt.toISOString(),
   })
+}
+
+function buildCoachReply(message: string, context: {
+  goal: string
+  calorieGoal: number
+  sleepHours: number
+  hydration: number
+  workoutMinutes: number
+}) {
+  const text = message.toLowerCase()
+
+  if (text.includes('sleep') || text.includes('recover')) {
+    const sleepNote = context.sleepHours
+      ? `Your latest sleep entry is ${context.sleepHours} hours.`
+      : 'You do not have a recent sleep entry yet.'
+    return `${sleepNote} Aim for a consistent 7.5–9 hour window, keep tonight’s session lighter if fatigue is high, and use the Recovery page before adding intensity.`
+  }
+
+  if (text.includes('calorie') || text.includes('food') || text.includes('nutrition') || text.includes('meal')) {
+    return `Your current calorie target is ${context.calorieGoal.toLocaleString()} kcal/day. Keep protein consistent, build meals around minimally processed foods, and adjust portions based on your weekly trend rather than a single day.`
+  }
+
+  if (text.includes('workout') || text.includes('plan') || text.includes('strength') || text.includes('cardio')) {
+    const recoveryHint = context.sleepHours >= 7 && context.hydration >= 2_000
+      ? 'Your latest recovery markers support a normal training day.'
+      : 'Your recovery markers suggest keeping today’s intensity controlled.'
+    return `${recoveryHint} For your goal${context.goal ? ` (${context.goal})` : ''}, use 3–5 structured training days, keep at least one recovery day between demanding sessions, and progress volume gradually.`
+  }
+
+  if (text.includes('water') || text.includes('hydrat')) {
+    return `Your latest hydration entry is ${context.hydration.toLocaleString()} ml. A practical daily target is around 2.5 L, with more fluid around longer or hotter training sessions.`
+  }
+
+  return `For ${context.goal || 'your current fitness goal'}, focus on consistency first: progressive training, enough protein, regular sleep, and a weekly trend check. I can help you turn that into a workout plan, nutrition target, or recovery routine.`
 }

@@ -19,7 +19,7 @@ export function Shell({ title, subtitle, children }: ShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
-    getUserProfile().then(setUser)
+    getUserProfile().then(setUser).catch(() => setUser(null))
   }, [])
 
   return (

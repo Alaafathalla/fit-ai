@@ -4,6 +4,7 @@ import { Shell } from '@/components/shell'
 import { Spinner } from '@/components/spinner'
 import { getWorkouts, type Workout, type WorkoutType } from '@/lib/api'
 import { Check, Clock3, Pause, Play, Search, Sparkles, Star, Volume2, VolumeX } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 const FILTER_TYPES: (WorkoutType | 'All')[] = ['All', 'Strength', 'Cardio', 'HIIT', 'Mobility']
@@ -179,20 +180,13 @@ function WorkoutCard({ w, index }: { w: Workout; index: number }) {
           ))}
         </div>
 
-        <button
-          className="mt-4 w-full rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95"
+        <Link
+          href={`/workouts/${w.id}`}
+          className="mt-4 block w-full rounded-xl py-2.5 text-center text-sm font-semibold transition-all duration-200 active:scale-95"
           style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--primary)'
-            e.currentTarget.style.color = 'var(--primary-foreground)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--primary-light)'
-            e.currentTarget.style.color = 'var(--primary)'
-          }}
         >
           Start workout
-        </button>
+        </Link>
       </div>
     </article>
   )
@@ -204,11 +198,14 @@ export default function WorkoutsPage() {
   const [filter, setFilter]     = useState<WorkoutType | 'All'>('All')
   const [search, setSearch]     = useState('')
   const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState('')
 
   useEffect(() => {
     setLoading(true)
+    setError('')
     getWorkouts(filter === 'All' ? undefined : filter)
       .then(setWorkouts)
+      .catch(() => setError('Could not load workouts. Please try again.'))
       .finally(() => setLoading(false))
   }, [filter])
 
@@ -236,9 +233,9 @@ export default function WorkoutsPage() {
               AI-curated sessions that meet you exactly where you are.
             </p>
           </div>
-          <button className="btn-primary gap-2 active:scale-95">
+          <Link href="/coach?prompt=Create%20a%20workout%20plan%20for%20me" className="btn-primary gap-2 active:scale-95">
             <Sparkles className="size-4" /> Generate with AI
-          </button>
+          </Link>
         </div>
 
         {/* Search + filters */}
@@ -284,6 +281,8 @@ export default function WorkoutsPage() {
 
         {loading ? (
           <Spinner label="Loading workouts…" />
+        ) : error ? (
+          <div className="card mt-6 p-8 text-center text-sm" style={{ color: 'var(--danger)' }}>{error}</div>
         ) : (
           <>
             <p
@@ -294,11 +293,18 @@ export default function WorkoutsPage() {
               {' '}· Hover a card to preview
             </p>
 
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {visible.map((w, i) => (
-                <WorkoutCard key={w.id} w={w} index={i} />
-              ))}
-            </div>
+            {visible.length ? (
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {visible.map((w, i) => (
+                  <WorkoutCard key={w.id} w={w} index={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="card p-10 text-center">
+                <p className="font-semibold" style={{ color: 'var(--foreground)' }}>No workouts match your search.</p>
+                <button onClick={() => setSearch('')} className="mt-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>Clear search</button>
+              </div>
+            )}
 
             {/* Footer */}
             <div

@@ -213,25 +213,79 @@ async function main() {
   console.log(`✓ Meals: ${mealsData.length}`)
 
   // ── Daily Stats ───────────────────────────────────────────────────────────────
-  const statsData = [
-    { date: '2025-06-18', weight: 80.2, calories: 1920, workoutMinutes: 45, steps: 8200,  hydration: 2100, sleepHours: 7.2 },
-    { date: '2025-06-19', weight: 80.0, calories: 1840, workoutMinutes: 0,  steps: 5400,  hydration: 1800, sleepHours: 6.8 },
-    { date: '2025-06-20', weight: 79.7, calories: 2050, workoutMinutes: 52, steps: 9100,  hydration: 2400, sleepHours: 7.5 },
-    { date: '2025-06-21', weight: 79.5, calories: 1760, workoutMinutes: 38, steps: 7800,  hydration: 2000, sleepHours: 8.0 },
-    { date: '2025-06-22', weight: 79.2, calories: 1990, workoutMinutes: 60, steps: 11200, hydration: 2600, sleepHours: 7.0 },
-    { date: '2025-06-23', weight: 78.8, calories: 1680, workoutMinutes: 0,  steps: 6200,  hydration: 1900, sleepHours: 7.8 },
-    { date: '2025-06-24', weight: 78.4, calories: 1240, workoutMinutes: 0,  steps: 3100,  hydration: 1100, sleepHours: 7.5 },
+  // Keep demo data relative to the seed date so dashboards always have a real "today".
+  const dailyTemplates = [
+    { weight: 80.2, calories: 1920, workoutMinutes: 45, steps: 8200,  hydration: 2100, sleepHours: 7.2 },
+    { weight: 80.0, calories: 1840, workoutMinutes: 0,  steps: 5400,  hydration: 1800, sleepHours: 6.8 },
+    { weight: 79.7, calories: 2050, workoutMinutes: 52, steps: 9100,  hydration: 2400, sleepHours: 7.5 },
+    { weight: 79.5, calories: 1760, workoutMinutes: 38, steps: 7800,  hydration: 2000, sleepHours: 8.0 },
+    { weight: 79.2, calories: 1990, workoutMinutes: 60, steps: 11200, hydration: 2600, sleepHours: 7.0 },
+    { weight: 78.8, calories: 1680, workoutMinutes: 42, steps: 6200,  hydration: 2300, sleepHours: 7.8 },
+    { weight: 78.4, calories: 1250, workoutMinutes: 0,  steps: 3100,  hydration: 1100, sleepHours: 7.5 },
   ]
 
-  for (const s of statsData) {
-    const date = new Date(s.date)
+  const startDate = new Date()
+  startDate.setHours(0, 0, 0, 0)
+  startDate.setDate(startDate.getDate() - (dailyTemplates.length - 1))
+
+  const statsData = dailyTemplates.map((template, index) => {
+    const date = new Date(startDate)
+    date.setDate(startDate.getDate() + index)
+    return { ...template, date }
+  })
+
+  for (const stat of statsData) {
     await prisma.dailyStats.upsert({
-      where: { userId_date: { userId: user.id, date } },
-      update: { ...s, date, calorieGoal: 2000 },
-      create: { userId: user.id, ...s, date, calorieGoal: 2000 },
+      where: { userId_date: { userId: user.id, date: stat.date } },
+      update: { ...stat, calorieGoal: 2000 },
+      create: { userId: user.id, ...stat, calorieGoal: 2000 },
     })
   }
   console.log(`✓ Daily stats: ${statsData.length} days`)
+
+  // ── Recent activity ───────────────────────────────────────────────────────────
+  // Re-create demo activity so the Activity page is useful immediately after seed.
+  await prisma.workoutSession.deleteMany({ where: { userId: user.id } })
+  await prisma.mealLog.deleteMany({ where: { userId: user.id } })
+
+  const atTime = (daysAgo: number, hour: number) => {
+    const date = new Date()
+    date.setHours(hour, 0, 0, 0)
+    date.setDate(date.getDate() - daysAgo)
+    return date
+  }
+
+  for (const [workoutId, daysAgo, duration] of [
+    ['w1', 1, 42],
+    ['w3', 2, 18],
+    ['w4', 3, 38],
+    ['w2', 5, 28],
+  ] as const) {
+    await prisma.workoutSession.create({
+      data: { userId: user.id, workoutId, duration, completedAt: atTime(daysAgo, 18) },
+    })
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  for (const [mealId, hour] of [['m1', 8], ['m2', 13], ['m4', 17]] as const) {
+    await prisma.mealLog.create({
+      data: { userId: user.id, mealId, date: today, loggedAt: atTime(0, hour) },
+    })
+  }
+
+  for (const [mealId, daysAgo, hour] of [
+    ['m5', 1, 8],
+    ['m6', 1, 19],
+    ['m1', 2, 8],
+  ] as const) {
+    const date = atTime(daysAgo, 0)
+    date.setHours(0, 0, 0, 0)
+    await prisma.mealLog.create({
+      data: { userId: user.id, mealId, date, loggedAt: atTime(daysAgo, hour) },
+    })
+  }
+  console.log('✓ Recent activity seeded')
 
   console.log('✅ Seed complete!')
 }

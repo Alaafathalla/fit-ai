@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 
-const USER_ID = process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
+const USER_ID = process.env.FITAI_USER_ID ?? process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const days = Math.min(parseInt(searchParams.get('days') ?? '7', 10), 90)
+  const requested = Number.parseInt(searchParams.get('days') ?? '7', 10)
+  const days = Number.isFinite(requested) ? Math.max(1, Math.min(requested, 90)) : 7
 
   const stats = (
     await prisma.dailyStats.findMany({

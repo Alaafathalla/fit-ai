@@ -79,6 +79,7 @@ model Workout {
 
   sessions WorkoutSession[]
 
+  @@index([type])
   @@map("workouts")
 }
 
@@ -96,6 +97,7 @@ model Meal {
 
   logs MealLog[]
 
+  @@index([mealType])
   @@map("meals")
 }
 
@@ -127,6 +129,7 @@ model WorkoutSession {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
 
+  @@index([userId, completedAt])
   @@map("workout_sessions")
 }
 
@@ -140,6 +143,7 @@ model MealLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
 
+  @@index([userId, loggedAt])
   @@map("meal_logs")
 }
 
@@ -152,5 +156,6 @@ model ChatMessage {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt])
   @@map("chat_messages")
 }

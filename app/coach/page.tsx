@@ -2,8 +2,15 @@
 
 import { CoachCapabilities, CoachPanel } from '@/components/coach-panel'
 import { Shell } from '@/components/shell'
+import { useEffect, useState } from 'react'
 
 export default function AICoachPage() {
+  const [initialPrompt, setInitialPrompt] = useState('')
+
+  useEffect(() => {
+    setInitialPrompt(new URLSearchParams(window.location.search).get('prompt') ?? '')
+  }, [])
+
   return (
     <Shell title="AI Coach">
       <div className="mx-auto max-w-3xl p-5 sm:p-8">
@@ -30,7 +37,7 @@ export default function AICoachPage() {
 
         {/* Full-height chat panel */}
         <div style={{ height: 560 }}>
-          <CoachPanel compact />
+          <CoachPanel compact initialPrompt={initialPrompt} />
         </div>
       </div>
     </Shell>

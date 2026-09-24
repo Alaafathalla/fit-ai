@@ -22,17 +22,20 @@ export default function ProgressPage() {
   const [stats, setStats]       = useState<DailyStats[]>([])
   const [progress, setProgress] = useState<WeeklyProgress[]>([])
   const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState('')
 
   useEffect(() => {
     Promise.all([getUserProfile(), getProgressMetrics(), getDailyStats(), getWeeklyProgress()])
       .then(([u, m, s, p]) => {
         setUser(u); setMetrics(m); setStats(s); setProgress(p)
       })
+      .catch(() => setError('Could not load progress data. Please try again.'))
       .finally(() => setLoading(false))
   }, [])
 
   const totalSteps      = progress.reduce((s, p) => s + p.steps, 0)
   const totalWorkoutMin = progress.reduce((s, p) => s + p.workoutMinutes, 0)
+  const weightDelta     = stats.length > 1 ? stats[stats.length - 1].weight - stats[0].weight : 0
   const avgSleep        = stats.length
     ? (stats.reduce((s, d) => s + d.sleepHours, 0) / stats.length).toFixed(1)
     : '—'
@@ -57,7 +60,9 @@ export default function ProgressPage() {
           </p>
         </div>
 
-        {loading ? <Spinner label="Crunching your data…" /> : (
+        {loading ? <Spinner label="Crunching your data…" /> : error ? (
+          <div className="card p-8 text-center text-sm" style={{ color: 'var(--danger)' }}>{error}</div>
+        ) : (
           <>
             {/* Weekly summary */}
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -94,9 +99,9 @@ export default function ProgressPage() {
                     Last 7 days
                   </p>
                 </div>
-                {stats.length > 0 && (
-                  <span className="text-sm font-semibold" style={{ color: 'var(--success)' }}>
-                    ↓ {(stats[0].weight - stats[stats.length - 1].weight).toFixed(1)} kg
+                {stats.length > 1 && (
+                  <span className="text-sm font-semibold" style={{ color: weightDelta <= 0 ? 'var(--success)' : 'var(--warning)' }}>
+                    {weightDelta < 0 ? '↓' : weightDelta > 0 ? '↑' : '→'} {Math.abs(weightDelta).toFixed(1)} kg
                   </span>
                 )}
               </div>

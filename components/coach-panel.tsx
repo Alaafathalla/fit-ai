@@ -6,7 +6,6 @@ import {
   Dumbbell,
   HeartPulse,
   Loader2,
-  Mic,
   Send,
   TrendingUp,
   Utensils,
@@ -34,12 +33,16 @@ interface Message {
   timestamp: string
 }
 
-export function CoachPanel({ compact = false }: { compact?: boolean }) {
-  const [input, setInput]         = useState('')
+export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: boolean; initialPrompt?: string }) {
+  const [input, setInput]         = useState(initialPrompt)
   const [loading, setLoading]     = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const [messages, setMessages]   = useState<Message[]>([GREETING])
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (initialPrompt) setInput(initialPrompt)
+  }, [initialPrompt])
 
   // Load persisted history on mount
   useEffect(() => {
@@ -198,9 +201,6 @@ export function CoachPanel({ compact = false }: { compact?: boolean }) {
             className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
             style={{ color: 'var(--foreground)' }}
           />
-          <button className="btn-ghost" aria-label="Voice input">
-            <Mic className="size-4" />
-          </button>
           <button
             onClick={() => send()}
             disabled={!input.trim() || loading}

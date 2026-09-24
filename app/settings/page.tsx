@@ -4,6 +4,7 @@ import { Shell } from '@/components/shell'
 import { useTheme } from '@/components/theme-provider'
 import { getUserProfile, updateUserProfile, type UserProfile } from '@/lib/api'
 import { Check, Loader2, Moon, Sun } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function SettingsPage() {
@@ -13,15 +14,39 @@ export default function SettingsPage() {
   const [name, setName]     = useState('')
   const [email, setEmail]   = useState('')
   const [goal, setGoal]     = useState('')
+  const [currentWeight, setCurrentWeight] = useState('')
+  const [targetWeight, setTargetWeight] = useState('')
   const [saved, setSaved]   = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
 
   const [notifications, setNotifications] = useState({
-    workouts:  true,
+    workouts: true,
     nutrition: true,
-    coach:     false,
+    coach: false,
   })
+  const [notificationsReady, setNotificationsReady] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('fitai-notifications')
+    if (!stored) {
+      setNotificationsReady(true)
+      return
+    }
+    try {
+      const parsed = JSON.parse(stored) as Partial<typeof notifications>
+      setNotifications((current) => ({ ...current, ...parsed }))
+    } catch {
+      localStorage.removeItem('fitai-notifications')
+    } finally {
+      setNotificationsReady(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!notificationsReady) return
+    localStorage.setItem('fitai-notifications', JSON.stringify(notifications))
+  }, [notifications, notificationsReady])
 
   useEffect(() => {
     getUserProfile().then((u) => {
@@ -29,18 +54,36 @@ export default function SettingsPage() {
       setName(u.name)
       setEmail(u.email)
       setGoal(u.goal)
-    })
+      setCurrentWeight(String(u.currentWeight || ''))
+      setTargetWeight(String(u.targetWeight || ''))
+    }).catch(() => setError('Failed to load profile.'))
   }, [])
 
   const handleSave = async () => {
     setSaving(true)
     setError('')
     try {
-      await updateUserProfile({ name, email, goal })
+      const parsedCurrentWeight = Number(currentWeight)
+      const parsedTargetWeight = Number(targetWeight)
+      await updateUserProfile({
+        name,
+        email,
+        goal,
+        currentWeight: Number.isFinite(parsedCurrentWeight) && parsedCurrentWeight > 0 ? parsedCurrentWeight : undefined,
+        targetWeight: Number.isFinite(parsedTargetWeight) && parsedTargetWeight > 0 ? parsedTargetWeight : undefined,
+      })
       setSaved(true)
       setTimeout(() => setSaved(false), 2200)
-    } catch {
-      setError('Failed to save. Please try again.')
+      setUser((current) => current ? {
+        ...current,
+        name,
+        email,
+        goal,
+        currentWeight: parsedCurrentWeight > 0 ? parsedCurrentWeight : current.currentWeight,
+        targetWeight: parsedTargetWeight > 0 ? parsedTargetWeight : current.targetWeight,
+      } : current)
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Failed to save. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -108,6 +151,8 @@ export default function SettingsPage() {
                 Email
               </label>
               <input
+                type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="input-base w-full px-3.5 py-2.5"
@@ -120,6 +165,34 @@ export default function SettingsPage() {
               <input
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
+                className="input-base w-full px-3.5 py-2.5"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                Current weight (kg)
+              </label>
+              <input
+                type="number"
+                min="20"
+                max="500"
+                step="0.1"
+                value={currentWeight}
+                onChange={(e) => setCurrentWeight(e.target.value)}
+                className="input-base w-full px-3.5 py-2.5"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                Target weight (kg)
+              </label>
+              <input
+                type="number"
+                min="20"
+                max="500"
+                step="0.1"
+                value={targetWeight}
+                onChange={(e) => setTargetWeight(e.target.value)}
                 className="input-base w-full px-3.5 py-2.5"
               />
             </div>
@@ -197,12 +270,13 @@ export default function SettingsPage() {
                 All features unlocked
               </p>
             </div>
-            <button
+            <Link
+              href="/plans"
               className="rounded-xl px-4 py-2 text-sm font-semibold active:scale-95"
               style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
             >
-              Upgrade to Elite
-            </button>
+              View plans
+            </Link>
           </div>
         </section>
 

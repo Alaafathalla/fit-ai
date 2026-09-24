@@ -2,32 +2,42 @@ import { prisma } from '@/lib/db'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
-const USER_ID = process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
-
-const Schema = z.object({ mealId: z.string() })
+const USER_ID = process.env.FITAI_USER_ID ?? process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
+const Schema = z.object({ mealId: z.string().min(1) })
 
 export async function POST(req: Request) {
-  const body = await req.json()
+  const body = await req.json().catch(() => null)
   const parsed = Schema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+  if (!parsed.success) return NextResponse.json({ error: 'A valid mealId is required' }, { status: 400 })
 
-  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const [meal, user] = await Promise.all([
+    prisma.meal.findUnique({ where: { id: parsed.data.mealId } }),
+    prisma.user.findUnique({ where: { id: USER_ID }, select: { calorieGoal: true } }),
+  ])
 
-  const log = await prisma.mealLog.create({
-    data: { userId: USER_ID, mealId: parsed.data.mealId, date: today },
-    include: { meal: true },
-  })
+  if (!meal) return NextResponse.json({ error: 'Meal not found' }, { status: 404 })
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-  // Update today's calorie count
-  await prisma.dailyStats.upsert({
-    where: { userId_date: { userId: USER_ID, date: today } },
-    update: { calories: { increment: log.meal.calories } },
-    create: {
-      userId: USER_ID,
-      date: today,
-      calorieGoal: 2000,
-      calories: log.meal.calories,
-    },
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const log = await prisma.$transaction(async (tx) => {
+    const created = await tx.mealLog.create({
+      data: { userId: USER_ID, mealId: meal.id, date: today },
+    })
+
+    await tx.dailyStats.upsert({
+      where: { userId_date: { userId: USER_ID, date: today } },
+      update: { calories: { increment: meal.calories } },
+      create: {
+        userId: USER_ID,
+        date: today,
+        calorieGoal: user.calorieGoal,
+        calories: meal.calories,
+      },
+    })
+
+    return created
   })
 
   return NextResponse.json({ ok: true, logId: log.id })

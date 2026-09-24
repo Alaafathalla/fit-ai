@@ -1,35 +1,11 @@
-# FitAI Coach — Frontend Only
+# FitAI Coach — Frontend + Local Fake API
 
-This version contains the Next.js frontend only. The local Prisma/PostgreSQL backend and all `app/api/*` route handlers were removed.
+This build is fully standalone. The Prisma/PostgreSQL backend, Next.js `app/api/*`
+routes, database setup, and external backend configuration have been removed.
 
-## API configuration
-
-Create `.env.local`:
-
-```env
-NEXT_PUBLIC_API_BASE_URL="http://localhost:8000/api"
-```
-
-Replace the URL with the real backend API root.
-
-The frontend calls these external endpoints directly:
-
-- `GET /user`
-- `PATCH /user`
-- `GET /workouts`
-- `GET /workouts/:id`
-- `POST /workouts/complete`
-- `GET /meals`
-- `POST /meals/log`
-- `GET /stats?days=N`
-- `PATCH /stats/hydration`
-- `GET /nutrition`
-- `GET /progress`
-- `GET /activity?limit=N`
-- `GET /coach`
-- `POST /coach`
-
-If the backend uses Bearer authentication, the frontend automatically sends a token stored in browser localStorage as `access_token`.
+All app data now comes from `lib/fake-api.ts` through the existing `@/lib/api`
+imports. Demo mutations such as profile edits, hydration, meal logs, completed
+workouts, and coach messages are stored in browser `localStorage`.
 
 ## Run
 
@@ -38,8 +14,16 @@ pnpm install
 pnpm dev
 ```
 
-The frontend runs on `http://localhost:3000`, but data requests go directly to `NEXT_PUBLIC_API_BASE_URL` instead of `localhost:3000/api`.
+or:
 
-## CORS
+```bash
+npm install
+npm run dev
+```
 
-Because the browser now calls the external API directly, that API must allow the frontend origin, e.g. `http://localhost:3000` during development.
+No database and no `.env.local` API URL are required.
+
+## Reset demo data
+
+Clear the browser key `fitai-fake-api-v1`, or call `resetFakeApi()` from
+`lib/fake-api.ts` during development.

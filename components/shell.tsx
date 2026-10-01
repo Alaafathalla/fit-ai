@@ -22,6 +22,12 @@ export function Shell({ title, subtitle, children }: ShellProps) {
     getUserProfile().then(setUser).catch(() => setUser(null))
   }, [])
 
+  /* Lock body scroll when mobile drawer is open */
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [drawerOpen])
+
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Desktop sidebar */}
@@ -33,17 +39,17 @@ export function Shell({ title, subtitle, children }: ShellProps) {
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0"
-            style={{ background: 'rgba(0,0,0,0.45)' }}
+            className="animate-fade-in absolute inset-0"
+            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
             onClick={() => setDrawerOpen(false)}
           />
-          <div className="absolute left-0 top-0 h-full shadow-2xl">
+          <div className="animate-slide-left absolute left-0 top-0 h-full shadow-2xl">
             <Sidebar user={user} onClose={() => setDrawerOpen(false)} />
           </div>
         </div>
       )}
 
-      {/* Main */}
+      {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
         <AppHeader
           title={title}

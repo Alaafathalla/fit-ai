@@ -1,15 +1,7 @@
 'use client'
 
 import { getChatHistory, sendCoachMessage } from '@/lib/api'
-import {
-  Bot,
-  Dumbbell,
-  HeartPulse,
-  Loader2,
-  Send,
-  TrendingUp,
-  Utensils,
-} from 'lucide-react'
+import { Bot, Dumbbell, HeartPulse, Loader2, Send, TrendingUp, Utensils } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 const QUICK_ACTIONS = [
@@ -34,25 +26,18 @@ interface Message {
 }
 
 export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: boolean; initialPrompt?: string }) {
-  const [input, setInput]         = useState(initialPrompt)
-  const [loading, setLoading]     = useState(false)
+  const [input,         setInput]         = useState(initialPrompt)
+  const [loading,       setLoading]       = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
-  const [messages, setMessages]   = useState<Message[]>([GREETING])
+  const [messages,      setMessages]      = useState<Message[]>([GREETING])
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (initialPrompt) setInput(initialPrompt)
-  }, [initialPrompt])
+  useEffect(() => { if (initialPrompt) setInput(initialPrompt) }, [initialPrompt])
 
-  // Load persisted history on mount
   useEffect(() => {
     getChatHistory()
-      .then((history) => {
-        if (history.length > 0) {
-          setMessages(history)
-        }
-      })
-      .catch(() => {/* keep greeting if API fails */})
+      .then((history) => { if (history.length > 0) setMessages(history) })
+      .catch(() => {})
       .finally(() => setHistoryLoaded(true))
   }, [])
 
@@ -63,32 +48,19 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
   const send = async (text = input) => {
     if (!text.trim() || loading) return
     setInput('')
-    // Optimistically add user message
-    const tempUserMsg: Message = {
-      id: `tmp-${Date.now()}`,
-      from: 'user',
-      text,
-      timestamp: new Date().toISOString(),
-    }
-    setMessages((m) => [...m, tempUserMsg])
+    const tmpMsg: Message = { id: `tmp-${Date.now()}`, from: 'user', text, timestamp: new Date().toISOString() }
+    setMessages((m) => [...m, tmpMsg])
     setLoading(true)
     try {
       const reply = await sendCoachMessage(text)
-      // Replace any temp + add real AI reply
       setMessages((m) => [...m, reply])
     } catch {
-      setMessages((m) => [
-        ...m,
-        {
-          id: `err-${Date.now()}`,
-          from: 'ai',
-          text: 'Sorry, I had trouble responding. Please try again.',
-          timestamp: new Date().toISOString(),
-        },
-      ])
-    } finally {
-      setLoading(false)
-    }
+      setMessages((m) => [...m, {
+        id: `err-${Date.now()}`, from: 'ai',
+        text: 'Sorry, I had trouble responding. Please try again.',
+        timestamp: new Date().toISOString(),
+      }])
+    } finally { setLoading(false) }
   }
 
   const showQuickActions = historyLoaded && messages.length <= 1
@@ -106,26 +78,22 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
       {/* Header */}
       <div
         className="flex items-center justify-between px-5 py-4"
-        style={{ borderBottom: '1px solid var(--border)' }}
+        style={{ borderBottom: '1px solid var(--border)', background: 'color-mix(in srgb, var(--primary) 5%, var(--card))' }}
       >
         <div className="flex items-center gap-3">
-          <span
-            className="grid size-10 place-items-center rounded-xl"
-            style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+          <div
+            className="icon-box size-10"
+            style={{ background: 'var(--gradient-hero)', color: '#fff', boxShadow: '0 2px 8px rgba(79,95,237,0.4)' }}
           >
             <Bot className="size-5" />
-          </span>
+          </div>
           <div>
-            <h3 className="font-semibold" style={{ color: 'var(--foreground)' }}>
-              AI Coach
-            </h3>
-            <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
-              Powered by FitAI
-            </p>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>AI Coach</h3>
+            <p className="text-[11px]" style={{ color: 'var(--foreground-muted)' }}>Powered by FitAI</p>
           </div>
         </div>
-        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--success)' }}>
-          <span className="size-2 rounded-full" style={{ background: 'var(--success)' }} />
+        <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--success)' }}>
+          <span className="size-2 rounded-full animate-pulse-ring" style={{ background: 'var(--success)' }} />
           Online
         </span>
       </div>
@@ -138,41 +106,45 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
             className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
               m.from === 'ai' ? 'rounded-tl-sm' : 'ml-auto rounded-tr-sm'
             }`}
-            style={
-              m.from === 'ai'
-                ? { background: 'var(--background-alt)', color: 'var(--foreground)' }
-                : { background: 'var(--foreground)', color: 'var(--background)' }
-            }
+            style={m.from === 'ai'
+              ? { background: 'var(--background-alt)', color: 'var(--foreground)' }
+              : { background: 'var(--gradient-hero)', color: '#fff' }}
           >
             {m.text}
           </div>
         ))}
 
         {loading && (
-          <div
-            className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-3"
-            style={{ background: 'var(--background-alt)' }}
-          >
-            <Loader2 className="size-4 animate-spin" style={{ color: 'var(--foreground-muted)' }} />
+          <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-3" style={{ background: 'var(--background-alt)' }}>
+            <div className="flex gap-1">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="size-1.5 rounded-full"
+                  style={{ background: 'var(--foreground-muted)', animation: `fade-in 0.6s ${i * 0.2}s ease infinite alternate` }}
+                />
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Quick actions — only shown before first user message */}
         {showQuickActions && (
           <div className="flex flex-wrap gap-2 pt-1">
             {QUICK_ACTIONS.map((q) => (
               <button
                 key={q}
                 onClick={() => send(q)}
-                className="rounded-full border px-3 py-1.5 text-xs transition-colors active:scale-95"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground-muted)' }}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-150 active:scale-95"
+                style={{ border: '1px solid var(--border)', color: 'var(--foreground-muted)', background: 'var(--card)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'var(--primary)'
                   e.currentTarget.style.color = 'var(--primary)'
+                  e.currentTarget.style.background = 'var(--primary-light)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'var(--border)'
                   e.currentTarget.style.color = 'var(--foreground-muted)'
+                  e.currentTarget.style.background = 'var(--card)'
                 }}
               >
                 {q}
@@ -194,8 +166,7 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229)
-                send()
+              if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) send()
             }}
             placeholder="Ask your coach anything…"
             className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
@@ -205,10 +176,10 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
             onClick={() => send()}
             disabled={!input.trim() || loading}
             aria-label="Send message"
-            className="grid size-8 place-items-center rounded-lg text-white transition-opacity disabled:opacity-40 active:scale-95"
-            style={{ background: 'var(--primary)' }}
+            className="grid size-8 place-items-center rounded-lg text-white transition-all duration-150 disabled:opacity-40 active:scale-95"
+            style={{ background: 'var(--gradient-hero)' }}
           >
-            <Send className="size-4" />
+            {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </button>
         </div>
       </div>
@@ -216,22 +187,20 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
   )
 }
 
-// ─── Capability chips ─────────────────────────────────────────────────────────
-
 export function CoachCapabilities() {
   const chips = [
-    { icon: Dumbbell,   label: 'Workout plans'     },
-    { icon: Utensils,   label: 'Nutrition advice'  },
-    { icon: HeartPulse, label: 'Recovery tips'     },
-    { icon: TrendingUp, label: 'Progress analysis' },
+    { icon: Dumbbell,   label: 'Workout plans',    color: 'var(--primary)' },
+    { icon: Utensils,   label: 'Nutrition advice',  color: 'var(--success)' },
+    { icon: HeartPulse, label: 'Recovery tips',     color: 'var(--accent)'  },
+    { icon: TrendingUp, label: 'Progress analysis', color: 'var(--warning)' },
   ]
   return (
     <div className="flex flex-wrap gap-2">
-      {chips.map(({ icon: Icon, label }) => (
+      {chips.map(({ icon: Icon, label, color }) => (
         <div
           key={label}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
-          style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
+          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+          style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', backdropFilter: 'blur(4px)' }}
         >
           <Icon className="size-3.5" />
           {label}

@@ -2,15 +2,15 @@ import { Sparkles } from 'lucide-react'
 
 export function Logo() {
   return (
-    <div className="flex items-center gap-2.5 font-semibold tracking-tight">
-      <span
-        className="grid size-8 place-items-center rounded-[10px]"
-        style={{ background: 'var(--foreground)', color: 'var(--background)' }}
+    <div className="flex items-center gap-2.5 select-none">
+      <div
+        className="icon-box size-9"
+        style={{ background: 'var(--gradient-hero)', color: '#fff', boxShadow: '0 2px 10px rgba(79,95,237,0.4)' }}
       >
         <Sparkles className="size-4" />
-      </span>
-      <span style={{ color: 'var(--foreground)' }}>
-        fit<span style={{ color: 'var(--primary)' }}>ai</span>
+      </div>
+      <span className="text-base font-black tracking-tight" style={{ color: 'var(--foreground)' }}>
+        fit<span style={{ background: 'var(--gradient-hero)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>ai</span>
       </span>
     </div>
   )

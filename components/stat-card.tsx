@@ -1,13 +1,14 @@
-import { MoreHorizontal } from 'lucide-react'
+import type { ElementType } from 'react'
 
 interface StatCardProps {
   label: string
   value: string
   meta: string
   metaPositive?: boolean
-  icon: React.ElementType
-  iconBg: string
-  iconColor: string
+  icon: ElementType
+  gradient?: string
+  iconColor?: string
+  badge?: string
 }
 
 export function StatCard({
@@ -16,46 +17,56 @@ export function StatCard({
   meta,
   metaPositive = true,
   icon: Icon,
-  iconBg,
-  iconColor,
+  gradient = 'var(--gradient-hero)',
+  iconColor = '#fff',
+  badge,
 }: StatCardProps) {
   return (
     <div
-      className="rounded-2xl p-5 transition-transform duration-200 hover:-translate-y-1"
+      className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1"
       style={{
         background: 'var(--card)',
         border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-lg)',
+        boxShadow: 'var(--shadow-md)',
       }}
     >
-      <div className="flex items-start justify-between">
-        <span
-          className="grid size-10 place-items-center rounded-xl"
-          style={{ background: iconBg, color: iconColor }}
+      {/* Subtle glow in top-right */}
+      <div
+        className="pointer-events-none absolute -right-8 -top-8 size-28 rounded-full opacity-[0.07] transition-opacity duration-300 group-hover:opacity-[0.12]"
+        style={{ background: gradient }}
+      />
+
+      <div className="relative flex items-start justify-between">
+        <div
+          className="icon-box size-11"
+          style={{ background: gradient, color: iconColor, boxShadow: `0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent)` }}
         >
           <Icon className="size-5" />
-        </span>
-        <MoreHorizontal className="size-4 opacity-30" style={{ color: 'var(--foreground)' }} />
+        </div>
+        {badge && (
+          <span className="badge badge-primary text-[10px]">{badge}</span>
+        )}
       </div>
 
-      <p className="mt-5 text-sm" style={{ color: 'var(--foreground-muted)' }}>
+      <p className="mt-4 text-xs font-medium" style={{ color: 'var(--foreground-muted)' }}>
         {label}
       </p>
 
       <div className="mt-1 flex items-end gap-2">
         <strong
-          className="text-2xl font-semibold tracking-tight"
+          className="text-2xl font-bold tracking-tight"
           style={{ color: 'var(--foreground)' }}
         >
           {value}
         </strong>
-        <span
-          className="mb-0.5 text-xs font-semibold"
-          style={{ color: metaPositive ? 'var(--success)' : 'var(--danger)' }}
-        >
-          {meta}
-        </span>
       </div>
+
+      <p
+        className="mt-1 text-xs font-semibold"
+        style={{ color: metaPositive ? 'var(--success)' : 'var(--danger)' }}
+      >
+        {meta}
+      </p>
     </div>
   )
 }

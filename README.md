@@ -13,7 +13,6 @@ workouts, and coach messages are stored in browser `localStorage`.
 pnpm install
 pnpm dev
 ```
-
 or:
 
 ```bash

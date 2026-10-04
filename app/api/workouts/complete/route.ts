@@ -3,12 +3,13 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const USER_ID = process.env.FITAI_USER_ID ?? process.env.NEXT_PUBLIC_USER_ID ?? 'u1'
-const Schema = z.object({ workoutId: z.string().min(1) })
+const Schema  = z.object({ workoutId: z.string().min(1) })
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   const parsed = Schema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'A valid workoutId is required' }, { status: 400 })
+  if (!parsed.success)
+    return NextResponse.json({ error: 'A valid workoutId is required' }, { status: 400 })
 
   const workout = await prisma.workout.findUnique({ where: { id: parsed.data.workoutId } })
   if (!workout) return NextResponse.json({ error: 'Workout not found' }, { status: 404 })
@@ -26,18 +27,13 @@ export async function POST(req: Request) {
 
     await tx.workout.update({
       where: { id: workout.id },
-      data: { completedCount: { increment: 1 } },
+      data:  { completedCount: { increment: 1 } },
     })
 
     await tx.dailyStats.upsert({
-      where: { userId_date: { userId: USER_ID, date: today } },
+      where:  { userId_date: { userId: USER_ID, date: today } },
       update: { workoutMinutes: { increment: workout.duration } },
-      create: {
-        userId: USER_ID,
-        date: today,
-        calorieGoal: user.calorieGoal,
-        workoutMinutes: workout.duration,
-      },
+      create: { userId: USER_ID, date: today, calorieGoal: user.calorieGoal, workoutMinutes: workout.duration },
     })
 
     return created
@@ -47,11 +43,11 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, sessionId: session.id })
 }
 
-async function recalcStreak(userId: string) {
+async function recalcStreak(userId: string): Promise<void> {
   const stats = await prisma.dailyStats.findMany({
-    where: { userId, workoutMinutes: { gt: 0 } },
+    where:   { userId, workoutMinutes: { gt: 0 } },
     orderBy: { date: 'desc' },
-    select: { date: true },
+    select:  { date: true },
   })
 
   let streak = 0
@@ -59,15 +55,13 @@ async function recalcStreak(userId: string) {
   cursor.setHours(0, 0, 0, 0)
 
   for (const stat of stats) {
-    const date = new Date(stat.date)
-    date.setHours(0, 0, 0, 0)
-    const diffDays = Math.round((cursor.getTime() - date.getTime()) / 86_400_000)
-
+    const d = new Date(stat.date)
+    d.setHours(0, 0, 0, 0)
+    const diffDays = Math.round((cursor.getTime() - d.getTime()) / 86_400_000)
     if (diffDays > 1) break
     if (diffDays < 0) continue
-
     streak += 1
-    cursor.setTime(date.getTime())
+    cursor.setTime(d.getTime())
   }
 
   await prisma.user.update({ where: { id: userId }, data: { streak } })

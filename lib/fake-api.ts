@@ -1,3 +1,5 @@
+import { getCurrentAuthUser, updateCurrentAuthIdentity } from './auth'
+
 /**
  * FitAI fake API.
  *
@@ -65,6 +67,7 @@ export interface UserProfile {
   streak: number
   fitnessScore: number
   joinedAt: string
+  role?: 'USER' | 'COACH'
 }
 
 export interface WeeklyProgress {
@@ -545,7 +548,20 @@ export async function updateHydration(hydration: number): Promise<{ ok: boolean;
 
 export async function getUserProfile(): Promise<UserProfile> {
   await fakeDelay()
-  return publicUser(getState().user)
+  const profile = publicUser(getState().user)
+  const authUser = getCurrentAuthUser()
+
+  if (!authUser) return profile
+
+  return {
+    ...profile,
+    id: authUser.id,
+    name: authUser.name,
+    email: authUser.email,
+    avatarInitials: authUser.avatarInitials,
+    plan: authUser.plan,
+    role: authUser.role,
+  }
 }
 
 export async function updateUserProfile(data: {
@@ -584,6 +600,7 @@ export async function updateUserProfile(data: {
   if (data.targetWeight !== undefined) state.user.targetWeight = data.targetWeight
 
   saveState(state)
+  updateCurrentAuthIdentity({ name: data.name, email: data.email })
   return { ok: true, name: state.user.name }
 }
 

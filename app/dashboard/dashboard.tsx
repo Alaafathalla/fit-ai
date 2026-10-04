@@ -94,7 +94,7 @@ export function DashboardPage() {
     : '0'
 
   return (
-    <Shell title={user ? `${greeting}, ${user.name}` : greeting} subtitle={dateStr}>
+    <Shell title={user ? `${greeting}, ${user.name}` : greeting} subtitle={dateStr} allowedRoles={['USER']}>
       <div className="p-5 sm:p-8">
 
         {/* Hero row */}

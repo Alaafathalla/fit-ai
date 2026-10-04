@@ -9,6 +9,11 @@ datasource db {
 
 // ─── Enums ─────────────────────────────────────────────────────────────────────
 
+enum Role {
+  USER
+  COACH
+}
+
 enum WorkoutType {
   Strength
   Cardio
@@ -38,33 +43,49 @@ enum Plan {
 // ─── Models ────────────────────────────────────────────────────────────────────
 
 model User {
-  id              String   @id @default(cuid())
-  name            String
-  email           String   @unique
-  avatarInitials  String
-  avatarColor     String   @default("bg-[#ffd9c5] text-[#8d4b2e]")
-  plan            Plan     @default(Free)
-  goal            String   @default("")
-  currentWeight   Float    @default(0)
-  targetWeight    Float    @default(0)
-  streak          Int      @default(0)
-  fitnessScore    Int      @default(0)
-  calorieGoal     Int      @default(2000)
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  role           Role     @default(USER)
+  avatarInitials String
+  avatarColor    String   @default("bg-[#ffd9c5] text-[#8d4b2e]")
+  plan           Plan     @default(Free)
+  goal           String   @default("")
+  currentWeight  Float    @default(0)
+  targetWeight   Float    @default(0)
+  streak         Int      @default(0)
+  fitnessScore   Int      @default(0)
+  calorieGoal    Int      @default(2000)
+  createdAt      DateTime @default(now())
 
-  dailyStats       DailyStats[]
-  workoutSessions  WorkoutSession[]
-  mealLogs         MealLog[]
-  chatMessages     ChatMessage[]
+  sessions        Session[]
+  dailyStats      DailyStats[]
+  workoutSessions WorkoutSession[]
+  mealLogs        MealLog[]
+  chatMessages    ChatMessage[]
 
   @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("sessions")
 }
 
 model Workout {
   id             String          @id @default(cuid())
   title          String
   type           WorkoutType
-  duration       Int             // minutes
+  duration       Int
   level          DifficultyLevel
   calories       Int
   exercises      Int
@@ -77,7 +98,7 @@ model Workout {
   completedCount Int             @default(0)
   createdAt      DateTime        @default(now())
 
-  sessions WorkoutSession[]
+  workoutSessions WorkoutSession[]
 
   @@index([type])
   @@map("workouts")
@@ -91,11 +112,11 @@ model Meal {
   protein  Float
   carbs    Float
   fat      Float
-  prepTime Int      // minutes
+  prepTime Int
   image    String
   tags     String[]
 
-  logs MealLog[]
+  mealLogs MealLog[]
 
   @@index([mealType])
   @@map("meals")
@@ -110,7 +131,7 @@ model DailyStats {
   calorieGoal    Int      @default(2000)
   workoutMinutes Int      @default(0)
   steps          Int      @default(0)
-  hydration      Int      @default(0) // ml
+  hydration      Int      @default(0)
   sleepHours     Float    @default(0)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -124,7 +145,7 @@ model WorkoutSession {
   userId      String
   workoutId   String
   completedAt DateTime @default(now())
-  duration    Int?     // actual minutes
+  duration    Int?
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
@@ -134,11 +155,11 @@ model WorkoutSession {
 }
 
 model MealLog {
-  id        String   @id @default(cuid())
-  userId    String
-  mealId    String
-  date      DateTime @db.Date
-  loggedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  userId   String
+  mealId   String
+  date     DateTime @db.Date
+  loggedAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   meal Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
@@ -150,7 +171,7 @@ model MealLog {
 model ChatMessage {
   id        String   @id @default(cuid())
   userId    String
-  from      String   // 'ai' | 'user'
+  from      String
   text      String
   createdAt DateTime @default(now())
 

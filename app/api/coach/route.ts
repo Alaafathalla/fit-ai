@@ -12,18 +12,21 @@ export async function GET() {
     take: 100,
   })
 
-  return NextResponse.json(messages.map((message) => ({
-    id: message.id,
-    from: message.from,
-    text: message.text,
-    timestamp: message.createdAt.toISOString(),
-  })))
+  return NextResponse.json(
+    messages.map((msg) => ({
+      id: msg.id,
+      from: msg.from,
+      text: msg.text,
+      timestamp: msg.createdAt.toISOString(),
+    })),
+  )
 }
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   const parsed = MessageSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'Message is required and must be under 2,000 characters.' }, { status: 400 })
+  if (!parsed.success)
+    return NextResponse.json({ error: 'Message is required and must be under 2,000 characters.' }, { status: 400 })
 
   const user = await prisma.user.findUnique({ where: { id: USER_ID } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
@@ -57,20 +60,17 @@ export async function POST(req: Request) {
   })
 }
 
-function buildCoachReply(message: string, context: {
-  goal: string
-  calorieGoal: number
-  sleepHours: number
-  hydration: number
-  workoutMinutes: number
-}) {
+function buildCoachReply(
+  message: string,
+  context: { goal: string; calorieGoal: number; sleepHours: number; hydration: number; workoutMinutes: number },
+): string {
   const text = message.toLowerCase()
 
   if (text.includes('sleep') || text.includes('recover')) {
     const sleepNote = context.sleepHours
       ? `Your latest sleep entry is ${context.sleepHours} hours.`
       : 'You do not have a recent sleep entry yet.'
-    return `${sleepNote} Aim for a consistent 7.5–9 hour window, keep tonight’s session lighter if fatigue is high, and use the Recovery page before adding intensity.`
+    return `${sleepNote} Aim for a consistent 7.5–9 hour window, keep tonight's session lighter if fatigue is high, and use the Recovery page before adding intensity.`
   }
 
   if (text.includes('calorie') || text.includes('food') || text.includes('nutrition') || text.includes('meal')) {
@@ -78,9 +78,10 @@ function buildCoachReply(message: string, context: {
   }
 
   if (text.includes('workout') || text.includes('plan') || text.includes('strength') || text.includes('cardio')) {
-    const recoveryHint = context.sleepHours >= 7 && context.hydration >= 2_000
-      ? 'Your latest recovery markers support a normal training day.'
-      : 'Your recovery markers suggest keeping today’s intensity controlled.'
+    const recoveryHint =
+      context.sleepHours >= 7 && context.hydration >= 2_000
+        ? 'Your latest recovery markers support a normal training day.'
+        : "Your recovery markers suggest keeping today's intensity controlled."
     return `${recoveryHint} For your goal${context.goal ? ` (${context.goal})` : ''}, use 3–5 structured training days, keep at least one recovery day between demanding sessions, and progress volume gradually.`
   }
 

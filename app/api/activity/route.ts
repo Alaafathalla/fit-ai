@@ -14,9 +14,7 @@ export async function GET(req: Request) {
       orderBy: { completedAt: 'desc' },
       take: limit,
       include: {
-        workout: {
-          select: { title: true, type: true, duration: true, calories: true, image: true },
-        },
+        workout: { select: { title: true, type: true, duration: true, calories: true, image: true } },
       },
     }),
     prisma.mealLog.findMany({
@@ -24,9 +22,7 @@ export async function GET(req: Request) {
       orderBy: { loggedAt: 'desc' },
       take: limit,
       include: {
-        meal: {
-          select: { name: true, mealType: true, calories: true, image: true },
-        },
+        meal: { select: { name: true, mealType: true, calories: true, image: true } },
       },
     }),
   ])

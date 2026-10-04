@@ -8,7 +8,8 @@ const Schema = z.object({ mealId: z.string().min(1) })
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   const parsed = Schema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: 'A valid mealId is required' }, { status: 400 })
+  if (!parsed.success)
+    return NextResponse.json({ error: 'A valid mealId is required' }, { status: 400 })
 
   const [meal, user] = await Promise.all([
     prisma.meal.findUnique({ where: { id: parsed.data.mealId } }),
@@ -29,12 +30,7 @@ export async function POST(req: Request) {
     await tx.dailyStats.upsert({
       where: { userId_date: { userId: USER_ID, date: today } },
       update: { calories: { increment: meal.calories } },
-      create: {
-        userId: USER_ID,
-        date: today,
-        calorieGoal: user.calorieGoal,
-        calories: meal.calories,
-      },
+      create: { userId: USER_ID, date: today, calorieGoal: user.calorieGoal, calories: meal.calories },
     })
 
     return created

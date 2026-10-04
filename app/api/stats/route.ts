@@ -18,14 +18,14 @@ export async function GET(req: Request) {
 
   return NextResponse.json(
     stats.map((s) => ({
-      date: s.date.toISOString().split('T')[0],
-      weight: s.weight,
-      calories: s.calories,
-      calorieGoal: s.calorieGoal,
+      date:           s.date.toISOString().split('T')[0],
+      weight:         s.weight,
+      calories:       s.calories,
+      calorieGoal:    s.calorieGoal,
       workoutMinutes: s.workoutMinutes,
-      steps: s.steps,
-      hydration: s.hydration,
-      sleepHours: s.sleepHours,
+      steps:          s.steps,
+      hydration:      s.hydration,
+      sleepHours:     s.sleepHours,
     })),
   )
 }

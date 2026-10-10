@@ -13,6 +13,7 @@ async function main() {
       id:             'u1',
       name:           'Mahmoud',
       email:          'mahmoud@fitai.app',
+      passwordHash:   '$2a$10$placeholder.hash.for.seed.data.only',
       avatarInitials: 'MA',
       avatarColor:    'bg-[#ffd9c5] text-[#8d4b2e]',
       plan:           'Pro',

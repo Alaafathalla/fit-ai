@@ -1,9 +1,8 @@
 'use client'
 
 import { Shell } from '@/components/shell'
-import { useTheme } from '@/components/theme-provider'
 import { getUserProfile, updateUserProfile, type UserProfile } from '@/lib/api'
-import { Check, Loader2, Moon, Sun } from 'lucide-react'
+import { Check, Loader2, Sun } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -16,7 +15,6 @@ const NOTIFICATION_LABELS = {
 type NotifKey = keyof typeof NOTIFICATION_LABELS
 
 export function SettingsPage() {
-  const { theme, toggleTheme } = useTheme()
 
   const [user,          setUser]          = useState<UserProfile | null>(null)
   const [name,          setName]          = useState('')
@@ -153,17 +151,16 @@ export function SettingsPage() {
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Theme</p>
               <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
-                Currently {theme === 'dark' ? 'dark' : 'light'} mode
+                Light mode — clean and focused
               </p>
             </div>
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-95"
-              style={{ background: 'var(--background-alt)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+            <div
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
+              style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
             >
-              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-              Switch to {theme === 'dark' ? 'light' : 'dark'}
-            </button>
+              <Sun className="size-4" />
+              Light
+            </div>
           </div>
 
           {/* Theme preview swatches */}

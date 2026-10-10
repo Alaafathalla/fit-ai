@@ -112,7 +112,13 @@ export function Shell({ title, subtitle, children, allowedRoles }: ShellProps) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppHeader title={title} subtitle={subtitle} onMenuOpen={() => setDrawerOpen(true)} role={user?.role === 'COACH' ? 'COACH' : 'USER'} />
+        <AppHeader
+          title={title}
+          subtitle={subtitle}
+          onMenuOpen={() => setDrawerOpen(true)}
+          role={user?.role === 'COACH' ? 'COACH' : 'USER'}
+          user={user}
+        />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>

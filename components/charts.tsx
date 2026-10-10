@@ -6,8 +6,20 @@ import type { DailyStats, WeeklyProgress } from '@/lib/api'
 export function WeightSparkline({ stats }: { stats: DailyStats[] }) {
   if (stats.length < 2) return null
 
-  const W = 520; const H = 128
   const weights = stats.map((s) => s.weight)
+  const allZero = weights.every((w) => w === 0)
+  if (allZero) {
+    return (
+      <div className="mt-4 flex h-32 flex-col items-center justify-center rounded-2xl bg-background-alt/50 border border-dashed border-border p-4 text-center">
+        <p className="text-xs font-bold text-foreground">0.0 kg recorded</p>
+        <p className="text-[11px] text-foreground-muted mt-0.5">
+          Enter your weight in profile to begin tracking trends.
+        </p>
+      </div>
+    )
+  }
+
+  const W = 520; const H = 128
   const min = Math.min(...weights) - 0.8
   const max = Math.max(...weights) + 0.8
   const toX = (i: number) => (i / (weights.length - 1)) * W

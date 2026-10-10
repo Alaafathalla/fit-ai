@@ -392,40 +392,96 @@ function makeDefaultState(): FakeState {
   }
 }
 
-let memoryState: FakeState | null = null
-
-function normalizeStateDates(state: FakeState): FakeState {
-  // Old demo data may have been saved on another day. Keep the fake dataset
-  // useful by resetting only when today's row is missing.
-  const today = isoDate(new Date())
-  if (state.stats.some((item) => item.date === today)) return state
-  return makeDefaultState()
+function getStorageKey(): string {
+  if (typeof window === 'undefined') return STORAGE_KEY
+  const authUser = getCurrentAuthUser()
+  if (!authUser || authUser.id === 'demo-athlete') return STORAGE_KEY
+  return `${STORAGE_KEY}-${authUser.id}`
 }
 
+function makeNewUserState(authUser: { id: string; name: string; email: string; avatarInitials: string; plan?: string; role?: string }): FakeState {
+  const stats: DailyStats[] = Array.from({ length: 7 }, (_, i) => {
+    const daysAgo = 6 - i
+    return {
+      date: isoDate(dateDaysAgo(daysAgo)),
+      weight: 0,
+      calories: 0,
+      calorieGoal: 2000,
+      workoutMinutes: 0,
+      steps: 0,
+      hydration: 0,
+      sleepHours: 0,
+    }
+  })
+
+  return {
+    user: {
+      id: authUser.id,
+      name: authUser.name,
+      email: authUser.email,
+      avatarInitials: authUser.avatarInitials,
+      avatarColor: 'bg-[#ffd9c5] text-[#8d4b2e]',
+      plan: (authUser.plan as 'Free' | 'Pro' | 'Elite') || 'Free',
+      goal: '',
+      currentWeight: 0,
+      targetWeight: 0,
+      streak: 0,
+      fitnessScore: 0,
+      joinedAt: isoDate(new Date()),
+      calorieGoal: 2000,
+      role: (authUser.role as 'USER' | 'COACH') || 'USER',
+    },
+    workouts: clone(WORKOUTS),
+    meals: clone(MEALS),
+    stats,
+    workoutSessions: [],
+    mealLogs: [],
+    chatMessages: [],
+  }
+}
+
+let memoryState: FakeState | null = null
+
 function getState(): FakeState {
+  const key = getStorageKey()
+  const authUser = typeof window !== 'undefined' ? getCurrentAuthUser() : null
+  const isDemoOrAnon = !authUser || authUser.id === 'demo-athlete'
+
   if (typeof window === 'undefined') {
-    if (!memoryState) memoryState = makeDefaultState()
+    if (!memoryState) memoryState = isDemoOrAnon ? makeDefaultState() : makeNewUserState(authUser!)
     return memoryState
   }
 
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
+    const stored = window.localStorage.getItem(key)
     if (stored) {
-      const parsed = normalizeStateDates(JSON.parse(stored) as FakeState)
+      const parsed = JSON.parse(stored) as FakeState
+      const today = isoDate(new Date())
+      if (!parsed.stats.some((item) => item.date === today)) {
+        parsed.stats.push({
+          date: today,
+          weight: parsed.user.currentWeight || 0,
+          calories: 0,
+          calorieGoal: parsed.user.calorieGoal || 2000,
+          workoutMinutes: 0,
+          steps: 0,
+          hydration: 0,
+          sleepHours: 0,
+        })
+      }
       memoryState = parsed
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
       return parsed
     }
   } catch {
-    // If localStorage is unavailable/corrupted, fall back to memory-only demo data.
+    // If reading localStorage fails, fall back to initial state
   }
 
-  const initial = makeDefaultState()
+  const initial = isDemoOrAnon ? makeDefaultState() : makeNewUserState(authUser!)
   memoryState = initial
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initial))
+    window.localStorage.setItem(key, JSON.stringify(initial))
   } catch {
-    // Ignore storage errors; the demo can still run in memory.
+    // Ignore storage errors in private browsing/sandbox
   }
   return initial
 }
@@ -434,9 +490,10 @@ function saveState(state: FakeState): void {
   memoryState = state
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    const key = getStorageKey()
+    window.localStorage.setItem(key, JSON.stringify(state))
   } catch {
-    // Keep the current in-memory state if storage is unavailable.
+    // Keep in memory if storage is unavailable
   }
 }
 
@@ -548,7 +605,8 @@ export async function updateHydration(hydration: number): Promise<{ ok: boolean;
 
 export async function getUserProfile(): Promise<UserProfile> {
   await fakeDelay()
-  const profile = publicUser(getState().user)
+  const state = getState()
+  const profile = publicUser(state.user)
   const authUser = getCurrentAuthUser()
 
   if (!authUser) return profile
@@ -556,11 +614,16 @@ export async function getUserProfile(): Promise<UserProfile> {
   return {
     ...profile,
     id: authUser.id,
-    name: authUser.name,
-    email: authUser.email,
-    avatarInitials: authUser.avatarInitials,
+    name: state.user.name || authUser.name,
+    email: state.user.email || authUser.email,
+    avatarInitials: state.user.avatarInitials || authUser.avatarInitials,
     plan: authUser.plan,
     role: authUser.role,
+    goal: state.user.goal,
+    currentWeight: state.user.currentWeight,
+    targetWeight: state.user.targetWeight,
+    streak: state.user.streak,
+    fitnessScore: state.user.fitnessScore,
   }
 }
 
@@ -596,8 +659,18 @@ export async function updateUserProfile(data: {
   if (data.currentWeight !== undefined) {
     state.user.currentWeight = data.currentWeight
     ensureTodayStat(state).weight = data.currentWeight
+    // Backfill historical zeros if user just set their weight
+    state.stats.forEach((s) => {
+      if (s.weight === 0) s.weight = data.currentWeight!
+    })
   }
   if (data.targetWeight !== undefined) state.user.targetWeight = data.targetWeight
+
+  // When user configures both weight and goal for the first time, initialize starting score and streak
+  if (state.user.currentWeight > 0 && state.user.goal) {
+    if (state.user.fitnessScore === 0) state.user.fitnessScore = 70
+    if (state.user.streak === 0) state.user.streak = 1
+  }
 
   saveState(state)
   updateCurrentAuthIdentity({ name: data.name, email: data.email })

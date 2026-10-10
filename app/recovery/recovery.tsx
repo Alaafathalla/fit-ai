@@ -7,9 +7,9 @@ import {
   Activity,
   BatteryCharging,
   BedDouble,
+  Compass,
   Droplets,
   HeartPulse,
-  Sparkles,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -155,7 +155,7 @@ export function RecoveryPage() {
                     meta: `${recovery.avgSleep.toFixed(1)} h weekly avg`,
                     score: recovery.sleepScore,
                     icon: BedDouble,
-                    color: '#7c3aed',
+                    color: '#0284c7',
                   },
                   {
                     label: 'Hydration',
@@ -171,7 +171,7 @@ export function RecoveryPage() {
                     meta: `${Math.round(recovery.avgLoad)} min/day avg`,
                     score: recovery.loadScore,
                     icon: Activity,
-                    color: '#4f5fed',
+                    color: '#2563eb',
                   },
                 ].map(({ label, value, meta, score, icon: Icon, color }) => (
                   <div key={label} className="card p-5">
@@ -201,7 +201,7 @@ export function RecoveryPage() {
               <section className="animate-fade-up card p-6" style={{ animationDelay: '120ms' }}>
                 <div className="flex items-start gap-4">
                   <div className="icon-box size-11 shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                    <Sparkles className="size-5" />
+                    <Compass className="size-5" />
                   </div>
                   <div>
                     <h3 className="font-bold" style={{ color: 'var(--foreground)' }}>Today's recommendation</h3>
@@ -217,9 +217,9 @@ export function RecoveryPage() {
                 </div>
                 <div className="space-y-3">
                   {[
-                    { label: 'Sleep',    target: '7.5–9 hours',   icon: BedDouble, color: '#7c3aed' },
-                    { label: 'Water',    target: '2.5 L or more', icon: Droplets,  color: '#06b6d4' },
-                    { label: 'Rest',     target: '1–2 days/week', icon: Activity,  color: '#4f5fed' },
+                    { label: 'Sleep',    target: '7.5–9 hours',   icon: BedDouble, color: '#0284c7' },
+                    { label: 'Water',    target: '2.5 L or more', icon: Droplets,  color: '#0ea5e9' },
+                    { label: 'Rest',     target: '1–2 days/week', icon: Activity,  color: '#059669' },
                   ].map(({ label, target, icon: Icon, color }) => (
                     <div key={label} className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'var(--background-alt)' }}>
                       <div

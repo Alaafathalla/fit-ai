@@ -19,7 +19,6 @@ import {
   Plus,
   Search,
   Settings,
-  Sparkles,
   UserCheck,
   Utensils,
   X,
@@ -199,12 +198,12 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                 <div className="flex items-center gap-2">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-primary">{subtitle}</p>
                   {role === 'COACH' ? (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200">
-                      <Sparkles className="size-2.5" /> Coach Mode
+                    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-800 border border-slate-200">
+                      Coach Workspace
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                      <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" /> Athlete
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200">
+                      <span className="size-1.5 rounded-full bg-emerald-500" /> Athlete Mode
                     </span>
                   )}
                 </div>
@@ -298,12 +297,12 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                     onClick={() => goTo('/coach')}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-foreground transition hover:bg-background-alt"
                   >
-                    <span className="grid size-7 place-items-center rounded-lg bg-purple-50 text-purple-600">
+                    <span className="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-800">
                       <Bot className="size-4" />
                     </span>
                     <div>
-                      <p className="font-bold">Ask AI Coach</p>
-                      <p className="text-[10px] text-foreground-muted">Instant personalized advice</p>
+                      <p className="font-bold">Training Advisor</p>
+                      <p className="text-[10px] text-foreground-muted">Consult personalized programming</p>
                     </div>
                   </button>
                 </div>

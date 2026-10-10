@@ -7,8 +7,8 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  HeartPulse,
   RefreshCw,
-  Sparkles,
   Utensils,
   Zap,
 } from 'lucide-react'
@@ -30,10 +30,10 @@ function getWeekDates() {
 }
 
 const TYPE_GRADIENTS: Record<string, string> = {
-  Strength: 'linear-gradient(135deg,#4f5fed,#7c3aed)',
-  Cardio:   'linear-gradient(135deg,#f59e0b,#ef4444)',
-  HIIT:     'linear-gradient(135deg,#ef4444,#f59e0b)',
-  Mobility: 'linear-gradient(135deg,#16a34a,#06b6d4)',
+  Strength: '#2563eb',
+  Cardio:   '#ea580c',
+  HIIT:     '#dc2626',
+  Mobility: '#059669',
 }
 
 export function PlannerPage() {
@@ -103,9 +103,9 @@ export function PlannerPage() {
             {/* Summary */}
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
               {[
-                { label: 'Training days',    value: `${trainingCount}/7`,                    icon: CalendarDays, gradient: 'linear-gradient(135deg,#4f5fed,#7c3aed)' },
-                { label: 'Planned volume',   value: `${totalMinutes} min`,                   icon: Clock3,       gradient: 'linear-gradient(135deg,#16a34a,#06b6d4)' },
-                { label: 'Projected burn',   value: `${totalCalories.toLocaleString()} kcal`, icon: Zap,         gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+                { label: 'Training days',    value: `${trainingCount}/7`,                    icon: CalendarDays, gradient: '#2563eb' },
+                { label: 'Planned volume',   value: `${totalMinutes} min`,                   icon: Clock3,       gradient: '#059669' },
+                { label: 'Projected burn',   value: `${totalCalories.toLocaleString()} kcal`, icon: Zap,         gradient: '#ea580c' },
               ].map(({ label, value, icon: Icon, gradient }, i) => (
                 <div
                   key={label}
@@ -161,7 +161,7 @@ export function PlannerPage() {
                     {item.isRest ? (
                       <div className="mt-4 flex items-center gap-4 rounded-2xl p-4" style={{ background: 'var(--background-alt)' }}>
                         <div className="icon-box size-10 shrink-0" style={{ background: 'var(--success-light)', color: 'var(--success)' }}>
-                          <Sparkles className="size-4" />
+                          <HeartPulse className="size-4" />
                         </div>
                         <div>
                           <p className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>Active recovery</p>

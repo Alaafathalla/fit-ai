@@ -39,8 +39,8 @@ export function ActivityPage() {
   const FILTERS: [Filter, string][] = [['all', 'All'], ['workout', 'Workouts'], ['meal', 'Meals']]
 
   const KIND_GRADIENTS = {
-    workout: 'linear-gradient(135deg,#4f5fed,#7c3aed)',
-    meal:    'linear-gradient(135deg,#16a34a,#06b6d4)',
+    workout: '#2563eb',
+    meal:    '#059669',
   }
 
   return (
@@ -67,7 +67,7 @@ export function ActivityPage() {
                 onClick={() => setFilter(value)}
                 className="whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-95"
                 style={filter === value
-                  ? { background: 'var(--gradient-hero)', color: '#fff', boxShadow: '0 2px 12px rgba(79,95,237,0.35)' }
+                  ? { background: 'var(--foreground)', color: '#fff', boxShadow: 'var(--shadow-sm)' }
                   : { background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground-muted)' }}
               >
                 {label}
@@ -83,9 +83,9 @@ export function ActivityPage() {
             {/* Summary */}
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
               {[
-                { label: 'Completed workouts', value: workoutCount,                icon: Dumbbell, gradient: 'linear-gradient(135deg,#4f5fed,#7c3aed)' },
-                { label: 'Meals logged',        value: mealCount,                  icon: Utensils, gradient: 'linear-gradient(135deg,#16a34a,#06b6d4)' },
-                { label: 'Tracked calories',    value: totalCalories.toLocaleString(), icon: Flame, gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+                { label: 'Completed workouts', value: workoutCount,                icon: Dumbbell, gradient: '#2563eb' },
+                { label: 'Meals logged',        value: mealCount,                  icon: Utensils, gradient: '#059669' },
+                { label: 'Tracked calories',    value: totalCalories.toLocaleString(), icon: Flame, gradient: '#ea580c' },
               ].map(({ label, value, icon: Icon, gradient }, i) => (
                 <div
                   key={label}

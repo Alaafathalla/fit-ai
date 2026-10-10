@@ -16,7 +16,6 @@ import {
   Plus,
   Search,
   Send,
-  Sparkles,
   TrendingUp,
   UsersRound,
   X,
@@ -158,7 +157,7 @@ export function CoachPortalPage() {
               <span className="text-xs font-black uppercase tracking-widest text-primary">
                 Coaching Operations
               </span>
-              <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200">
+              <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-black text-blue-700 border border-blue-200">
                 Live Roster
               </span>
             </div>
@@ -187,11 +186,11 @@ export function CoachPortalPage() {
         {/* Metric Cards */}
         <div className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ['Active clients', '24', '+3 this month', UsersRound, 'linear-gradient(135deg,#4f5fed,#7c3aed)'],
-            ['Weekly adherence', '89%', '+4.2% vs last week', TrendingUp, 'linear-gradient(135deg,#16a34a,#06b6d4)'],
-            ['Check-ins due', '6', '3 due today', CalendarCheck2, 'linear-gradient(135deg,#f59e0b,#ef4444)'],
-            ['Avg response time', '1h 18m', '14m faster than avg', Clock3, 'linear-gradient(135deg,#06b6d4,#4f5fed)'],
-          ].map(([label, value, meta, Icon, gradient], index) => (
+            ['Active clients', '24', '+3 this month', UsersRound, 'bg-slate-900 text-white'],
+            ['Weekly adherence', '89%', '+4.2% vs last week', TrendingUp, 'bg-emerald-600 text-white'],
+            ['Check-ins due', '6', '3 due today', CalendarCheck2, 'bg-amber-600 text-white'],
+            ['Avg response time', '1h 18m', '14m faster than avg', Clock3, 'bg-blue-600 text-white'],
+          ].map(([label, value, meta, Icon, colorClass], index) => (
             <div
               key={String(label)}
               className="card p-5 transition hover:-translate-y-0.5"
@@ -201,14 +200,11 @@ export function CoachPortalPage() {
                 <div>
                   <p className="text-xs font-bold text-foreground-muted">{String(label)}</p>
                   <p className="mt-2 text-2xl font-black tracking-tight text-foreground">{String(value)}</p>
-                  <p className="mt-1 text-xs font-bold text-success flex items-center gap-1">
-                    <Sparkles className="size-3" /> {String(meta)}
+                  <p className="mt-1 text-xs font-semibold text-emerald-600">
+                    {String(meta)}
                   </p>
                 </div>
-                <span
-                  className="grid size-11 place-items-center rounded-2xl text-white shadow-md"
-                  style={{ background: String(gradient) }}
-                >
+                <span className={`grid size-10 place-items-center rounded-xl shadow-xs ${colorClass}`}>
                   <Icon className="size-5" />
                 </span>
               </div>
@@ -422,29 +418,25 @@ export function CoachPortalPage() {
             </div>
 
             {/* Weekly Pulse Card */}
-            <div
-              className="overflow-hidden rounded-3xl p-6 text-white shadow-xl relative"
-              style={{ background: 'var(--gradient-hero)' }}
-            >
-              <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-white/10 blur-xl" />
+            <div className="overflow-hidden rounded-2xl p-6 text-white bg-slate-900 border border-slate-800 shadow-sm relative">
               <div className="relative z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-4" />
-                    <span className="text-xs font-black uppercase tracking-wider text-white/80">
+                    <CheckCircle2 className="size-4 text-emerald-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                       Roster Compliance
                     </span>
                   </div>
-                  <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold">
+                  <span className="rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-300 border border-slate-700">
                     This Week
                   </span>
                 </div>
 
                 <div className="mt-4 flex items-baseline gap-2">
-                  <p className="text-4xl font-black tracking-tight">19 / 24</p>
-                  <p className="text-sm font-semibold text-white/80">Athletes</p>
+                  <p className="text-3xl font-black tracking-tight text-white">19 / 24</p>
+                  <p className="text-sm font-medium text-slate-400">Athletes</p>
                 </div>
-                <p className="mt-1 text-xs text-white/80 leading-relaxed">
+                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
                   Active athletes have logged all assigned training sessions and nutrition targets for the current cycle.
                 </p>
 

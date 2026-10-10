@@ -11,7 +11,7 @@ import {
   Pause,
   Play,
   Search,
-  Sparkles,
+  SlidersHorizontal,
   Star,
   Volume2,
   VolumeX,
@@ -22,10 +22,10 @@ import { useEffect, useRef, useState } from 'react'
 const FILTER_TYPES: (WorkoutType | 'All')[] = ['All', 'Strength', 'Cardio', 'HIIT', 'Mobility']
 
 const TYPE_STYLES: Record<string, { bg: string; color: string; gradient: string }> = {
-  Strength: { bg: '#eef0ff', color: '#4f5fed', gradient: 'linear-gradient(135deg,#4f5fed,#7c3aed)' },
-  Cardio:   { bg: '#fff4e6', color: '#d97706', gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
-  HIIT:     { bg: '#fee2e2', color: '#dc2626', gradient: 'linear-gradient(135deg,#ef4444,#f59e0b)' },
-  Mobility: { bg: '#dcfce7', color: '#16a34a', gradient: 'linear-gradient(135deg,#16a34a,#06b6d4)' },
+  Strength: { bg: '#eff6ff', color: '#1d4ed8', gradient: '#2563eb' },
+  Cardio:   { bg: '#fff7ed', color: '#c2410c', gradient: '#ea580c' },
+  HIIT:     { bg: '#fef2f2', color: '#b91c1c', gradient: '#dc2626' },
+  Mobility: { bg: '#ecfdf5', color: '#047857', gradient: '#059669' },
 }
 
 function WorkoutCard({ w, index }: { w: Workout; index: number }) {
@@ -215,11 +215,11 @@ export function WorkoutsPage() {
               Find your next workout
             </h2>
             <p className="mt-1 text-sm" style={{ color: 'var(--foreground-muted)' }}>
-              AI-curated sessions that meet you exactly where you are.
+              Structured sessions calibrated to endurance, strength, and mobility benchmarks.
             </p>
           </div>
           <Link href="/coach?prompt=Create%20a%20workout%20plan%20for%20me" className="btn-primary gap-2">
-            <Sparkles className="size-4" /> Generate with AI
+            <SlidersHorizontal className="size-4" /> Custom Routine Request
           </Link>
         </div>
 
@@ -254,7 +254,7 @@ export function WorkoutsPage() {
                   onClick={() => setFilter(f)}
                   className="whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-95"
                   style={active
-                    ? { background: st?.gradient ?? 'var(--gradient-hero)', color: '#fff', boxShadow: '0 2px 12px rgba(79,95,237,0.35)' }
+                    ? { background: st?.gradient ?? 'var(--foreground)', color: '#fff', boxShadow: 'var(--shadow-sm)' }
                     : { background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground-muted)' }}
                 >
                   {f}

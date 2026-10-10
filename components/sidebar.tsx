@@ -15,7 +15,6 @@ import {
   LogOut,
   RefreshCw,
   Settings,
-  Sparkles,
   TrendingUp,
   UserCheck,
   UsersRound,
@@ -55,20 +54,20 @@ export const USER_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'Intelligence',
+    label: 'Analytics & Support',
     items: [
       { label: 'Progress', href: '/progress', icon: TrendingUp, keywords: 'charts weight metrics performance' },
       { label: 'Activity', href: '/activity', icon: Activity, keywords: 'history timeline sessions meals' },
-      { label: 'AI Coach', href: '/coach', icon: Bot, keywords: 'assistant advice coach ai help', badge: 'AI' },
+      { label: 'Coach Assistant', href: '/coach', icon: Bot, keywords: 'assistant advice coach support' },
     ],
   },
 ]
 
 export const COACH_NAV_GROUPS: NavGroup[] = [
   {
-    label: 'Coaching Operations',
+    label: 'Client Management',
     items: [
-      { label: 'Coach Workspace', href: '/coach-portal', icon: UsersRound, keywords: 'coach clients roster checkins workspace', badge: 'Live' },
+      { label: 'Client Roster', href: '/coach-portal', icon: UsersRound, keywords: 'coach clients roster checkins workspace' },
       { label: 'Planner', href: '/planner', icon: CalendarDays, keywords: 'week schedule routine plan' },
     ],
   },
@@ -81,11 +80,11 @@ export const COACH_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'Intelligence',
+    label: 'Analytics & Support',
     items: [
       { label: 'Progress', href: '/progress', icon: TrendingUp, keywords: 'charts weight metrics performance' },
       { label: 'Activity', href: '/activity', icon: Activity, keywords: 'history timeline sessions meals' },
-      { label: 'AI Assistant', href: '/coach', icon: Bot, keywords: 'assistant advice coach ai help', badge: 'AI' },
+      { label: 'Coaching Assistant', href: '/coach', icon: Bot, keywords: 'assistant advice coach support' },
     ],
   },
 ]
@@ -186,7 +185,7 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                           active
                             ? 'bg-white/20 text-white'
                             : badge === 'AI'
-                            ? 'bg-purple-100 text-purple-700'
+                            ? 'bg-blue-100 text-blue-700'
                             : 'bg-emerald-100 text-emerald-700'
                         }`}
                       >

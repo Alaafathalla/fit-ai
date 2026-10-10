@@ -1,7 +1,7 @@
 'use client'
 
 import { Logo } from '@/components/logo'
-import { Activity, BrainCircuit, CheckCircle2, ShieldCheck, Sparkles, Zap } from 'lucide-react'
+import { Activity, CheckCircle2, ShieldCheck, Zap } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -14,55 +14,53 @@ interface AuthShellProps {
 }
 
 const highlights = [
-  { icon: BrainCircuit, label: 'Adaptive coaching', text: 'Plans that evolve with every session.' },
-  { icon: Activity, label: 'Progress intelligence', text: 'Training, nutrition, and recovery in one view.' },
-  { icon: ShieldCheck, label: 'Private by design', text: 'Your fitness journey stays under your control.' },
+  { icon: Activity, label: 'Performance Analytics', text: 'Workouts, macro splits, and bio-readiness in unified telemetry.' },
+  { icon: Zap, label: 'Adaptive Programming', text: 'Progressive training volumes calibrated to actual performance.' },
+  { icon: ShieldCheck, label: 'Client & Coach Collaboration', text: 'Direct accountability pipelines with zero fluff.' },
 ]
 
 export function AuthShell({ eyebrow, title, description, children, footer }: AuthShellProps) {
   return (
     <main className="min-h-screen bg-white lg:grid lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="relative hidden min-h-screen overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-10 xl:p-14">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg,#121a4e 0%,#4f5fed 52%,#7c3aed 100%)' }} />
-        <div className="absolute -left-24 top-20 size-80 rounded-full bg-cyan-300/15 blur-3xl" />
-        <div className="absolute -right-20 bottom-10 size-96 rounded-full bg-fuchsia-300/20 blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
+      <section className="relative hidden min-h-screen overflow-hidden bg-[#090d16] text-white lg:flex lg:flex-col lg:justify-between lg:p-10 xl:p-14 border-r border-slate-800">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
         <div className="relative z-10">
-          <Link href="/" aria-label="FitAI home" className="inline-flex rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/10">
+          <Link href="/" aria-label="FitAI home" className="inline-flex rounded-xl bg-slate-900/90 border border-slate-700 px-4 py-2.5 shadow-lg backdrop-blur">
             <Logo />
           </Link>
         </div>
 
         <div className="relative z-10 max-w-xl py-10">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90 backdrop-blur">
-            <Sparkles className="size-3.5" /> AI-powered wellness platform
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/90 px-3 py-1 text-xs font-semibold text-slate-200">
+            <Activity className="size-3.5 text-blue-400" />
+            <span>High-Performance Training Cockpit</span>
           </div>
           <h2 className="max-w-lg text-4xl font-black tracking-[-0.04em] text-white xl:text-5xl">
-            Train smarter. Coach better. Keep momentum visible.
+            Engineered for athletes. Built for coaches.
           </h2>
-          <p className="mt-5 max-w-lg text-base leading-7 text-white/72">
-            A focused workspace for athletes and coaches to turn daily actions into measurable progress.
+          <p className="mt-5 max-w-lg text-base leading-7 text-slate-400">
+            A precision workspace designed to track training loads, recovery metrics, and client progression without noise.
           </p>
 
           <div className="mt-9 grid gap-3">
             {highlights.map(({ icon: Icon, label, text }) => (
-              <div key={label} className="flex items-center gap-4 rounded-2xl border border-white/12 bg-white/8 p-4 backdrop-blur-sm">
-                <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/14 text-white">
+              <div key={label} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 backdrop-blur-sm">
+                <div className="grid size-10 shrink-0 place-items-center rounded-lg border border-slate-700/60 bg-slate-800 text-blue-400">
                   <Icon className="size-4" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">{label}</p>
-                  <p className="mt-0.5 text-xs text-white/65">{text}</p>
+                  <p className="mt-0.5 text-xs text-slate-400">{text}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-5 text-xs text-white/65">
-          <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="size-3.5" /> Athlete & coach access</span>
-          <span className="inline-flex items-center gap-1.5"><Zap className="size-3.5" /> Fast onboarding</span>
+        <div className="relative z-10 flex items-center gap-6 text-xs text-slate-400">
+          <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="size-3.5 text-emerald-400" /> Pro Athlete & Coach Telemetry</span>
+          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-blue-400" /> Enterprise-Grade Privacy</span>
         </div>
       </section>
 

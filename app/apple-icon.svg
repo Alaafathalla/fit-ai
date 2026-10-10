@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="appleBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="applePulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+    <filter id="appleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#2563eb" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="120" fill="url(#appleBg)" />
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="none" stroke="#1e293b" stroke-width="12" />
+
+  <g filter="url(#appleGlow)">
+    <path
+      d="M 88 256 H 164 L 202 324 L 266 128 L 332 384 L 372 256 H 424"
+      fill="none"
+      stroke="url(#applePulse)"
+      stroke-width="46"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <circle cx="266" cy="128" r="16" fill="#ffffff" />
+  <circle cx="266" cy="128" r="8" fill="#38bdf8" />
+  <circle cx="88" cy="256" r="10" fill="#2563eb" />
+  <circle cx="424" cy="256" r="10" fill="#60a5fa" />
+</svg>

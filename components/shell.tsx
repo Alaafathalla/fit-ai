@@ -7,6 +7,7 @@ import type { UserProfile } from '@/lib/api'
 import { getUserProfile } from '@/lib/api'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { applyTheme, getStoredAccent, getStoredThemeMode } from '@/lib/theme'
 
 interface ShellProps {
   title: string
@@ -51,7 +52,7 @@ export function Shell({ title, subtitle, children, allowedRoles }: ShellProps) {
             name: authUser.name,
             email: authUser.email,
             avatarInitials: authUser.avatarInitials,
-            avatarColor: 'bg-[#eef0ff] text-[#4f5fed]',
+            avatarColor: 'bg-blue-50 text-blue-600',
             plan: authUser.plan,
             goal: '',
             currentWeight: 0,
@@ -75,6 +76,21 @@ export function Shell({ title, subtitle, children, allowedRoles }: ShellProps) {
       unsubscribe()
     }
   }, [allowedRoleKey, pathname, router])
+
+  useEffect(() => {
+    const mode = getStoredThemeMode()
+    const accent = getStoredAccent()
+    applyTheme(mode, accent)
+
+    const onThemeChange = (e: Event) => {
+      const custom = e as CustomEvent<{ mode: 'light' | 'dark'; accentId: string }>
+      if (custom.detail) {
+        applyTheme(custom.detail.mode, custom.detail.accentId)
+      }
+    }
+    window.addEventListener('fitai-theme-changed', onThemeChange)
+    return () => window.removeEventListener('fitai-theme-changed', onThemeChange)
+  }, [])
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : ''

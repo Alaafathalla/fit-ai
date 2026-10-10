@@ -27,7 +27,6 @@ import {
   Pause,
   Play,
   Scale,
-  Sparkles,
   Target,
   Volume2,
   VolumeX,
@@ -186,24 +185,24 @@ export function DashboardPage() {
       <div className="p-5 sm:p-8">
         {/* New Account Onboarding Prompt */}
         {isNewAccount && (
-          <div className="animate-fade-up mb-7 overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary-light via-accent-light/40 to-background-alt p-5 sm:p-6 shadow-sm">
+          <div className="animate-fade-up mb-7 overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3.5">
-                <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-md">
-                  <Sparkles className="size-6" />
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-xs">
+                  <Scale className="size-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-md bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white">
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-800 border border-slate-200">
                       Profile Setup
                     </span>
-                    <span className="text-xs font-bold text-foreground-muted">Step 1 of 1</span>
+                    <span className="text-xs font-medium text-foreground-muted">Initial Configuration</span>
                   </div>
-                  <h3 className="mt-1 text-lg font-black text-foreground">
-                    Welcome to FitAI, {user?.name || 'Athlete'}!
+                  <h3 className="mt-1 text-base font-extrabold text-foreground">
+                    Welcome to FitAI, {user?.name || 'Athlete'}
                   </h3>
                   <p className="mt-0.5 text-xs text-foreground-muted max-w-xl leading-relaxed">
-                    All dashboard numbers remain <strong>0</strong> until you enter your current weight and fitness goal. Configure them now to unlock your personalized target calories, streaks, and progress.
+                    All metrics show <strong>0</strong> until you enter your current weight and training goal. Configure them below to calculate daily targets, energy expenditure, and streaks.
                   </p>
                 </div>
               </div>
@@ -211,11 +210,11 @@ export function DashboardPage() {
               <div className="flex items-center gap-2.5 sm:shrink-0">
                 <button
                   onClick={() => setSetupModalOpen(true)}
-                  className="btn-primary !h-11 !px-5 !text-xs font-bold shadow-md"
+                  className="btn-primary !h-10 !px-4 !text-xs font-semibold"
                 >
-                  <Sparkles className="size-3.5" /> Set Up Profile Now
+                  Set Up Profile
                 </button>
-                <Link href="/settings" className="btn-outline !h-11 !px-4 !text-xs font-bold">
+                <Link href="/settings" className="btn-outline !h-10 !px-4 !text-xs font-semibold">
                   Settings
                 </Link>
               </div>
@@ -226,13 +225,13 @@ export function DashboardPage() {
         {/* Hero row */}
         <div className="animate-fade-up mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="mb-1 text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--primary)' }}>
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
               {dateStr}
             </p>
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={{ color: 'var(--foreground)' }}>
               Your fitness overview
             </h2>
-            <p className="mt-1 text-sm" style={{ color: 'var(--foreground-muted)' }}>
+            <p className="mt-1 text-sm text-foreground-muted">
               {isNewAccount
                 ? 'Enter your weight and goal below to activate personalized tracking.'
                 : 'Stay consistent — every session counts.'}
@@ -244,7 +243,7 @@ export function DashboardPage() {
         </div>
 
         {error && !loading && (
-          <div className="mb-5 rounded-xl px-4 py-3 text-sm" style={{ background: 'var(--danger-light)', color: 'var(--danger)' }}>
+          <div className="mb-5 rounded-xl px-4 py-3 text-sm bg-danger-light text-danger">
             {error}
           </div>
         )}
@@ -262,7 +261,7 @@ export function DashboardPage() {
                   meta: isNewAccount ? 'Enter in profile' : `${Number(weightDelta) <= 0 ? '↓' : '↑'} ${Math.abs(Number(weightDelta))} kg`,
                   metaPositive: isNewAccount ? false : Number(weightDelta) <= 0,
                   icon: Target,
-                  gradient: 'linear-gradient(135deg,#4f5fed,#7c3aed)',
+                  gradient: 'linear-gradient(135deg,#0f172a,#1e293b)',
                   style: { '--i': 0 } as React.CSSProperties,
                 },
                 {
@@ -271,7 +270,7 @@ export function DashboardPage() {
                   meta: isNewAccount ? '0% of goal' : `${Math.round((todayCalories / todayCalorieGoal) * 100)}% of goal`,
                   metaPositive: !isNewAccount,
                   icon: Flame,
-                  gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)',
+                  gradient: 'linear-gradient(135deg,#ea580c,#c2410c)',
                   style: { '--i': 1 } as React.CSSProperties,
                 },
                 {
@@ -280,16 +279,16 @@ export function DashboardPage() {
                   meta: isNewAccount ? '0 days' : 'Keep it going 🔥',
                   metaPositive: !isNewAccount,
                   icon: Zap,
-                  gradient: 'linear-gradient(135deg,#7c3aed,#06b6d4)',
+                  gradient: 'linear-gradient(135deg,#2563eb,#1d4ed8)',
                   style: { '--i': 2 } as React.CSSProperties,
                 },
                 {
-                  label: 'AI fitness score',
+                  label: 'Performance score',
                   value: `${displayFitnessScore}/100`,
                   meta: isNewAccount ? 'Awaiting setup' : '+6 this week',
                   metaPositive: !isNewAccount,
                   icon: HeartPulse,
-                  gradient: 'linear-gradient(135deg,#16a34a,#06b6d4)',
+                  gradient: 'linear-gradient(135deg,#059669,#047857)',
                   style: { '--i': 3 } as React.CSSProperties,
                 },
               ].map(({ style, ...card }) => (

@@ -2,7 +2,7 @@
 
 import { CoachCapabilities, CoachPanel } from '@/components/coach-panel'
 import { Shell } from '@/components/shell'
-import { Bot, Sparkles } from 'lucide-react'
+import { Compass, ShieldCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export function AICoachPage() {
@@ -13,34 +13,31 @@ export function AICoachPage() {
   }, [])
 
   return (
-    <Shell title="AI Coach">
+    <Shell title="Training Advisor">
       <div className="mx-auto max-w-3xl p-5 sm:p-8">
 
         {/* Hero banner */}
-        <div
-          className="animate-fade-up mb-7 overflow-hidden rounded-3xl p-7 sm:p-9"
-          style={{
-            background: 'var(--gradient-hero)',
-            boxShadow: '0 8px 40px rgba(79,95,237,0.35)',
-          }}
-        >
+        <div className="animate-fade-up mb-7 overflow-hidden rounded-2xl border border-slate-800 bg-[#090d16] p-6 sm:p-8 text-white shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="icon-box size-10" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-                  <Bot className="size-5" />
+                <div className="grid size-9 place-items-center rounded-lg border border-slate-700 bg-slate-800 text-blue-400">
+                  <Compass className="size-4" />
                 </div>
-                <span className="text-xs font-bold text-white/80 uppercase tracking-widest">Personal guidance</span>
+                <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">Performance Intelligence</span>
               </div>
-              <h2 className="text-3xl font-bold text-white tracking-tight">Your AI Coach</h2>
-              <p className="mt-2 text-sm text-white/75 leading-relaxed max-w-md">
-                Ask anything about training, nutrition, or recovery — get personalized answers based on your data.
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Training Advisor</h2>
+              <p className="mt-2 text-sm text-slate-400 leading-relaxed max-w-lg">
+                Evidence-based recommendations for workout splits, progressive overload, and nutrition targets calibrated to your activity log.
               </p>
             </div>
-            <Sparkles className="size-8 text-white/30 shrink-0 animate-float" />
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900/90 px-3 py-1 text-xs font-semibold text-slate-300">
+              <ShieldCheck className="size-3.5 text-emerald-400" />
+              <span>Bio-Telemetry Active</span>
+            </div>
           </div>
 
-          <div className="mt-5">
+          <div className="mt-5 pt-4 border-t border-slate-800/80">
             <CoachCapabilities />
           </div>
         </div>

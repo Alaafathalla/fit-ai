@@ -3,19 +3,23 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'FitAI Coach — Your personal AI fitness coach',
-  description: 'Personalized workouts, nutrition plans, and progress tracking powered by AI.',
+  title: 'FitAI — Athletic Performance & Coaching Platform',
+  description: 'Precision training workspace for athletes and coaches. Track workout loads, nutrition targets, and recovery telemetry in real time.',
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', sizes: 'any' },
     ],
-    apple: '/apple-icon.png',
+    shortcut: '/icon.svg',
+    apple: [
+      { url: '/apple-icon.svg', type: 'image/svg+xml' },
+    ],
   },
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light',
-  themeColor: '#ffffff',
+  themeColor: '#090d16',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

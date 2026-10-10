@@ -10,7 +10,7 @@ import {
   loginWithPassword,
   type AuthRole,
 } from '@/lib/auth'
-import { AlertCircle, ArrowRight, Mail, Sparkles } from 'lucide-react'
+import { AlertCircle, ArrowRight, KeyRound, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useState } from 'react'
@@ -143,8 +143,8 @@ export default function LoginPage() {
           onClick={fillDemo}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background-alt px-4 py-3 text-sm font-semibold text-foreground transition hover:border-primary/30 hover:bg-primary-light"
         >
-          <Sparkles className="size-4 text-primary" />
-          Use {role === 'COACH' ? 'coach' : 'athlete'} demo account
+          <KeyRound className="size-4 text-primary" />
+          Use {role === 'COACH' ? 'coach' : 'athlete'} demo credentials
         </button>
       </form>
     </AuthShell>

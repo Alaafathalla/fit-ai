@@ -1,24 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bgFavicon" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0f172a" />
       <stop offset="100%" stop-color="#020617" />
     </linearGradient>
-    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="pulseFavicon" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#2563eb" />
       <stop offset="50%" stop-color="#38bdf8" />
       <stop offset="100%" stop-color="#60a5fa" />
     </linearGradient>
-    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="subtleGlowFavicon" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#2563eb" flood-opacity="0.4" />
     </filter>
   </defs>
 
-  <!-- Background athletic squircle -->
-  <rect width="512" height="512" rx="120" fill="url(#bgGrad)" />
+  <rect width="512" height="512" rx="120" fill="url(#bgFavicon)" />
   <rect x="8" y="8" width="496" height="496" rx="112" fill="none" stroke="#1e293b" stroke-width="12" />
 
-  <!-- Subtle telemetry grid pattern behind icon -->
   <g opacity="0.08" stroke="#ffffff" stroke-width="2">
     <line x1="96" y1="170" x2="416" y2="170" stroke-dasharray="6 6" />
     <line x1="96" y1="256" x2="416" y2="256" stroke-dasharray="6 6" />
@@ -28,23 +26,19 @@
     <line x1="336" y1="96" x2="336" y2="416" stroke-dasharray="6 6" />
   </g>
 
-  <!-- Main athletic pulse vector -->
-  <g filter="url(#subtleGlow)">
+  <g filter="url(#subtleGlowFavicon)">
     <path
       d="M 88 256 H 164 L 202 324 L 266 128 L 332 384 L 372 256 H 424"
       fill="none"
-      stroke="url(#pulseGrad)"
+      stroke="url(#pulseFavicon)"
       stroke-width="46"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
   </g>
 
-  <!-- High-performance peak indicator -->
   <circle cx="266" cy="128" r="16" fill="#ffffff" />
   <circle cx="266" cy="128" r="8" fill="#38bdf8" />
-
-  <!-- Dynamic telemetry pulse endpoints -->
   <circle cx="88" cy="256" r="10" fill="#2563eb" />
   <circle cx="424" cy="256" r="10" fill="#60a5fa" />
 </svg>

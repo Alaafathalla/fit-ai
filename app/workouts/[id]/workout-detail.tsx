@@ -19,10 +19,10 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 const TYPE_GRADIENTS: Record<string, string> = {
-  Strength: 'linear-gradient(135deg,#4f5fed,#7c3aed)',
-  Cardio:   'linear-gradient(135deg,#f59e0b,#ef4444)',
-  HIIT:     'linear-gradient(135deg,#ef4444,#f59e0b)',
-  Mobility: 'linear-gradient(135deg,#16a34a,#06b6d4)',
+  Strength: '#2563eb',
+  Cardio:   '#ea580c',
+  HIIT:     '#dc2626',
+  Mobility: '#059669',
 }
 
 export function WorkoutDetailPage() {

@@ -2,17 +2,17 @@
 
 import { Shell } from '@/components/shell'
 import { getUserProfile, type UserProfile } from '@/lib/api'
-import { Check, Crown, ShieldCheck, Sparkles, Zap } from 'lucide-react'
+import { Activity, Check, Crown, ShieldCheck, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 const PLANS = [
   {
     name: 'Free',
-    description: 'Build consistent habits with the essentials.',
+    description: 'Build consistent habits with baseline telemetry.',
     price: '$0',
     suffix: '/month',
     icon: Zap,
-    gradient: 'linear-gradient(135deg,#5a6482,#8b99b5)',
+    gradient: '#475569',
     features: [
       'Workout library (6 sessions)',
       'Basic nutrition tracking',
@@ -25,12 +25,12 @@ const PLANS = [
     description: 'Smarter planning and deeper insights for regular training.',
     price: '$12',
     suffix: '/month',
-    icon: Sparkles,
+    icon: Activity,
     featured: true,
-    gradient: 'linear-gradient(135deg,#4f5fed,#7c3aed)',
+    gradient: '#2563eb',
     features: [
       'Everything in Free',
-      'AI Coach conversations',
+      'Training Advisor sessions',
       'Weekly smart planner',
       'Recovery & readiness score',
       'Full activity history',
@@ -43,11 +43,11 @@ const PLANS = [
     price: '$24',
     suffix: '/month',
     icon: Crown,
-    gradient: 'linear-gradient(135deg,#f59e0b,#ef4444)',
+    gradient: '#0f172a',
     features: [
       'Everything in Pro',
       'Advanced training analytics',
-      'Priority AI coaching',
+      'Dedicated coach review pipeline',
       'Custom goal cycles',
       'Exportable health reports',
       'Early access to features',
@@ -68,7 +68,7 @@ export function PlansPage() {
 
         {/* Hero */}
         <div className="animate-fade-up mx-auto mb-10 max-w-2xl text-center">
-          <span className="badge badge-primary">FitAI membership</span>
+          <span className="badge badge-primary">Athletic Membership</span>
           <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl" style={{ color: 'var(--foreground)' }}>
             Choose the coaching depth you need
           </h2>
@@ -85,20 +85,20 @@ export function PlansPage() {
             return (
               <article
                 key={plan.name}
-                className="animate-fade-up relative flex flex-col overflow-hidden rounded-3xl transition-all duration-300 hover:-translate-y-1"
+                className="animate-fade-up relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1"
                 style={{
                   background: 'var(--card)',
                   border: `1.5px solid ${plan.featured ? 'var(--primary)' : 'var(--border)'}`,
                   boxShadow: plan.featured
-                    ? '0 8px 40px rgba(79,95,237,0.25), var(--shadow-lg)'
-                    : 'var(--shadow-md)',
+                    ? '0 12px 30px rgba(15,23,42,0.12), var(--shadow-md)'
+                    : 'var(--shadow-sm)',
                   animationDelay: `${i * 70}ms`,
                 }}
               >
                 {/* Featured banner */}
                 {plan.featured && (
-                  <div className="py-2.5 text-center text-xs font-black tracking-widest uppercase text-white" style={{ background: plan.gradient }}>
-                    Most popular
+                  <div className="py-2 text-center text-[11px] font-black tracking-widest uppercase text-white bg-blue-600">
+                    Recommended
                   </div>
                 )}
 

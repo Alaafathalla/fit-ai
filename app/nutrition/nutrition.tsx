@@ -17,16 +17,16 @@ import { useEffect, useState } from 'react'
 const MEAL_TYPES: (Meal['mealType'] | 'All')[] = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack']
 
 const MEAL_GRADIENTS: Record<string, string> = {
-  Breakfast: 'linear-gradient(135deg,#f59e0b,#ef4444)',
-  Lunch:     'linear-gradient(135deg,#16a34a,#06b6d4)',
-  Dinner:    'linear-gradient(135deg,#4f5fed,#7c3aed)',
-  Snack:     'linear-gradient(135deg,#7c3aed,#06b6d4)',
+  Breakfast: '#ea580c',
+  Lunch:     '#059669',
+  Dinner:    '#2563eb',
+  Snack:     '#475569',
 }
 
 const MACRO_CONFIG = [
-  { label: 'Protein', key: 'protein' as const, goal: 160, color: 'var(--primary)' },
-  { label: 'Carbs',   key: 'carbs'   as const, goal: 200, color: 'var(--warning)' },
-  { label: 'Fat',     key: 'fat'     as const, goal: 65,  color: 'var(--accent)'  },
+  { label: 'Protein', key: 'protein' as const, goal: 160, color: '#2563eb' },
+  { label: 'Carbs',   key: 'carbs'   as const, goal: 200, color: '#ea580c' },
+  { label: 'Fat',     key: 'fat'     as const, goal: 65,  color: '#0f172a'  },
 ]
 
 export function NutritionPage() {
@@ -168,7 +168,7 @@ export function NutritionPage() {
                   onClick={() => setMealFilter(t)}
                   className="whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-95"
                   style={mealFilter === t
-                    ? { background: 'var(--gradient-hero)', color: '#fff', boxShadow: '0 2px 12px rgba(79,95,237,0.35)' }
+                    ? { background: 'var(--foreground)', color: '#fff', boxShadow: 'var(--shadow-sm)' }
                     : { background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground-muted)' }}
                 >
                   {t}

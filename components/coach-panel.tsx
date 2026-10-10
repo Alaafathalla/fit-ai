@@ -1,7 +1,7 @@
 'use client'
 
 import { getChatHistory, sendCoachMessage } from '@/lib/api'
-import { Bot, Dumbbell, HeartPulse, Loader2, Send, TrendingUp, Utensils } from 'lucide-react'
+import { Compass, Dumbbell, HeartPulse, Loader2, Send, TrendingUp, Utensils } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 const QUICK_ACTIONS = [
@@ -78,22 +78,21 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
       {/* Header */}
       <div
         className="flex items-center justify-between px-5 py-4"
-        style={{ borderBottom: '1px solid var(--border)', background: 'color-mix(in srgb, var(--primary) 5%, var(--card))' }}
+        style={{ borderBottom: '1px solid var(--border)', background: 'var(--card)' }}
       >
         <div className="flex items-center gap-3">
           <div
-            className="icon-box size-10"
-            style={{ background: 'var(--gradient-hero)', color: '#fff', boxShadow: '0 2px 8px rgba(79,95,237,0.4)' }}
+            className="grid size-9 place-items-center rounded-lg bg-slate-900 text-white"
           >
-            <Bot className="size-5" />
+            <Compass className="size-4 text-blue-400" />
           </div>
           <div>
-            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>AI Coach</h3>
-            <p className="text-[11px]" style={{ color: 'var(--foreground-muted)' }}>Powered by FitAI</p>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>Training Advisor</h3>
+            <p className="text-[11px]" style={{ color: 'var(--foreground-muted)' }}>Calibrated with your training logs</p>
           </div>
         </div>
         <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: 'var(--success)' }}>
-          <span className="size-2 rounded-full animate-pulse-ring" style={{ background: 'var(--success)' }} />
+          <span className="size-2 rounded-full" style={{ background: 'var(--success)' }} />
           Online
         </span>
       </div>
@@ -107,8 +106,8 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
               m.from === 'ai' ? 'rounded-tl-sm' : 'ml-auto rounded-tr-sm'
             }`}
             style={m.from === 'ai'
-              ? { background: 'var(--background-alt)', color: 'var(--foreground)' }
-              : { background: 'var(--gradient-hero)', color: '#fff' }}
+              ? { background: 'var(--background-alt)', color: 'var(--foreground)', border: '1px solid var(--border)' }
+              : { background: '#2563eb', color: '#fff' }}
           >
             {m.text}
           </div>
@@ -176,8 +175,7 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
             onClick={() => send()}
             disabled={!input.trim() || loading}
             aria-label="Send message"
-            className="grid size-8 place-items-center rounded-lg text-white transition-all duration-150 disabled:opacity-40 active:scale-95"
-            style={{ background: 'var(--gradient-hero)' }}
+            className="grid size-8 place-items-center rounded-lg text-white transition-all duration-150 disabled:opacity-40 active:scale-95 bg-blue-600 hover:bg-blue-700"
           >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </button>
@@ -189,20 +187,19 @@ export function CoachPanel({ compact = false, initialPrompt = '' }: { compact?: 
 
 export function CoachCapabilities() {
   const chips = [
-    { icon: Dumbbell,   label: 'Workout plans',    color: 'var(--primary)' },
-    { icon: Utensils,   label: 'Nutrition advice',  color: 'var(--success)' },
-    { icon: HeartPulse, label: 'Recovery tips',     color: 'var(--accent)'  },
-    { icon: TrendingUp, label: 'Progress analysis', color: 'var(--warning)' },
+    { icon: Dumbbell,   label: 'Training Programs',    color: 'var(--primary)' },
+    { icon: Utensils,   label: 'Nutritional Splits',   color: 'var(--success)' },
+    { icon: HeartPulse, label: 'Bio-Recovery Protocol', color: 'var(--accent)'  },
+    { icon: TrendingUp, label: 'Progression Velocity',  color: 'var(--warning)' },
   ]
   return (
     <div className="flex flex-wrap gap-2">
-      {chips.map(({ icon: Icon, label, color }) => (
+      {chips.map(({ icon: Icon, label }) => (
         <div
           key={label}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
-          style={{ background: 'rgba(255,255,255,0.18)', color: '#fff', backdropFilter: 'blur(4px)' }}
+          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold border border-slate-700 bg-slate-800/80 text-slate-200"
         >
-          <Icon className="size-3.5" />
+          <Icon className="size-3.5 text-blue-400" />
           {label}
         </div>
       ))}

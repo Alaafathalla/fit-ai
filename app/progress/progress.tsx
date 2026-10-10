@@ -71,9 +71,9 @@ export function ProgressPage() {
             {/* Weekly summary */}
             <div className="mb-6 grid gap-4 sm:grid-cols-3">
               {[
-                { label: 'Steps this week',   value: totalSteps.toLocaleString(), icon: Footprints, gradient: 'linear-gradient(135deg,#4f5fed,#7c3aed)' },
-                { label: 'Workout minutes',   value: `${totalWorkoutMin} min`,    icon: Dumbbell,   gradient: 'linear-gradient(135deg,#16a34a,#06b6d4)' },
-                { label: 'Avg sleep / night', value: `${avgSleep} hrs`,           icon: BedDouble,  gradient: 'linear-gradient(135deg,#7c3aed,#06b6d4)' },
+                { label: 'Steps this week',   value: totalSteps.toLocaleString(), icon: Footprints, gradient: '#2563eb' },
+                { label: 'Workout minutes',   value: `${totalWorkoutMin} min`,    icon: Dumbbell,   gradient: '#ea580c' },
+                { label: 'Avg sleep / night', value: `${avgSleep} hrs`,           icon: BedDouble,  gradient: '#0284c7' },
               ].map(({ label, value, icon: Icon, gradient }, i) => (
                 <div
                   key={label}

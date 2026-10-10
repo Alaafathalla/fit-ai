@@ -2,9 +2,10 @@
 
 import { Shell } from '@/components/shell'
 import { getUserProfile, updateUserProfile, type UserProfile } from '@/lib/api'
-import { Check, Loader2, Sun } from 'lucide-react'
+import { Check, Loader2, Moon, Sun } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { ACCENT_COLORS, applyTheme, getStoredAccent, getStoredThemeMode, type ThemeMode } from '@/lib/theme'
 
 const NOTIFICATION_LABELS = {
   workouts:  { title: 'Workout reminders',  desc: "Get reminded when it's time to train"   },
@@ -26,10 +27,21 @@ export function SettingsPage() {
   const [saving,        setSaving]        = useState(false)
   const [error,         setError]         = useState('')
 
+  const [themeMode,     setThemeMode]     = useState<ThemeMode>('light')
+  const [accentId,      setAccentId]      = useState<string>('blue')
+
   const [notifications, setNotifications] = useState<Record<NotifKey, boolean>>({
     workouts: true, nutrition: true, coach: false,
   })
   const [notifReady, setNotifReady] = useState(false)
+
+  useEffect(() => {
+    const mode = getStoredThemeMode()
+    const accent = getStoredAccent()
+    setThemeMode(mode)
+    setAccentId(accent)
+    applyTheme(mode, accent)
+  }, [])
 
   useEffect(() => {
     const stored = localStorage.getItem('fitai-notifications')
@@ -151,23 +163,55 @@ export function SettingsPage() {
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Theme</p>
               <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
-                Light mode — clean and focused
+                {themeMode === 'dark' ? 'Dark mode — high contrast and focused' : 'Light mode — clean and focused'}
               </p>
             </div>
-            <div
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
-              style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}
+            <button
+              type="button"
+              onClick={() => {
+                const nextMode = themeMode === 'light' ? 'dark' : 'light'
+                setThemeMode(nextMode)
+                applyTheme(nextMode, accentId)
+              }}
+              className="flex items-center gap-1.5 rounded-full border border-sky-100 bg-[#f0f7ff] px-4 py-2 text-xs font-semibold text-[#2563eb] transition hover:bg-[#e0efff] active:scale-95 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-400"
             >
-              <Sun className="size-4" />
-              Light
-            </div>
+              {themeMode === 'dark' ? (
+                <>
+                  <Moon className="size-3.5" />
+                  Dark
+                </>
+              ) : (
+                <>
+                  <Sun className="size-3.5" />
+                  Light
+                </>
+              )}
+            </button>
           </div>
 
           {/* Theme preview swatches */}
-          <div className="flex gap-2">
-            {['var(--primary)', 'var(--accent)', 'var(--success)', 'var(--warning)', 'var(--danger)'].map((c) => (
-              <div key={c} className="size-6 rounded-full" style={{ background: c }} />
-            ))}
+          <div className="flex items-center gap-2.5 pt-1">
+            {ACCENT_COLORS.map((c) => {
+              const isSelected = accentId === c.id
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-label={c.label}
+                  title={c.label}
+                  onClick={() => {
+                    setAccentId(c.id)
+                    applyTheme(themeMode, c.id)
+                  }}
+                  className={`size-6 sm:size-7 rounded-full transition-all duration-150 active:scale-90 ${
+                    isSelected
+                      ? 'ring-2 ring-offset-2 ring-foreground/40 scale-110 shadow-xs'
+                      : 'hover:scale-105 opacity-90 hover:opacity-100'
+                  }`}
+                  style={{ background: c.hex }}
+                />
+              )
+            })}
           </div>
         </section>
 
@@ -190,8 +234,8 @@ export function SettingsPage() {
                 onClick={() => setNotifications((n) => ({ ...n, [key]: !n[key] }))}
                 className="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-all duration-200 active:scale-95"
                 style={{
-                  background: notifications[key] ? 'var(--gradient-hero)' : 'var(--border)',
-                  boxShadow: notifications[key] ? '0 2px 8px rgba(79,95,237,0.4)' : 'none',
+                  background: notifications[key] ? 'var(--primary)' : 'var(--border)',
+                  boxShadow: notifications[key] ? 'var(--shadow-xs)' : 'none',
                 }}
               >
                 <span

@@ -11,12 +11,12 @@ export function Logo() {
             strokeLinejoin="round"
           />
           <circle cx="25" cy="11" r="2" fill="#ffffff" />
-          <circle cx="25" cy="11" r="1" fill="#38bdf8" />
+          <circle cx="25" cy="11" r="1" fill="#c084fc" />
           <defs>
             <linearGradient id="logoPulse" x1="6" y1="24" x2="42" y2="24" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#3b82f6" />
-              <stop offset="0.5" stopColor="#38bdf8" />
-              <stop offset="1" stopColor="#60a5fa" />
+              <stop stopColor="#7c3aed" />
+              <stop offset="0.5" stopColor="#a855f7" />
+              <stop offset="1" stopColor="#c084fc" />
             </linearGradient>
           </defs>
         </svg>

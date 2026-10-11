@@ -1,6 +1,7 @@
 'use client'
 
 import { AppHeader } from '@/components/app-header'
+import { CoachWidget } from '@/components/coach-widget'
 import { Sidebar } from '@/components/sidebar'
 import { getCurrentAuthUser, getRoleHome, subscribeToAuth, type AuthRole } from '@/lib/auth'
 import type { UserProfile } from '@/lib/api'
@@ -137,6 +138,8 @@ export function Shell({ title, subtitle, children, allowedRoles }: ShellProps) {
         />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+
+      <CoachWidget />
     </div>
   )
 }

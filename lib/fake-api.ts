@@ -1,4 +1,5 @@
 import { getCurrentAuthUser, updateCurrentAuthIdentity } from './auth'
+import { generateCoachReply } from './coach-ai'
 
 /**
  * FitAI fake API.
@@ -791,16 +792,23 @@ export async function sendCoachMessage(message: string): Promise<CoachMessage> {
   state.chatMessages.push({ id: makeId('user'), from: 'user', text, timestamp: now })
 
   const latest = [...state.stats].sort((a, b) => a.date.localeCompare(b.date)).at(-1)
+  
+  const aiText = await generateCoachReply(text, {
+    athleteName: state.user.name,
+    goal: state.user.goal,
+    currentWeight: state.user.currentWeight,
+    targetWeight: state.user.targetWeight,
+    calorieGoal: state.user.calorieGoal,
+    sleepHours: latest?.sleepHours ?? 0,
+    hydration: latest?.hydration ?? 0,
+    workoutMinutes: latest?.workoutMinutes ?? 0,
+    streak: state.user.streak,
+  })
+
   const reply: CoachMessage = {
     id: makeId('ai'),
     from: 'ai',
-    text: buildCoachReply(text, {
-      goal: state.user.goal,
-      calorieGoal: state.user.calorieGoal,
-      sleepHours: latest?.sleepHours ?? 0,
-      hydration: latest?.hydration ?? 0,
-      workoutMinutes: latest?.workoutMinutes ?? 0,
-    }),
+    text: aiText,
     timestamp: new Date().toISOString(),
   }
 
@@ -809,38 +817,11 @@ export async function sendCoachMessage(message: string): Promise<CoachMessage> {
   return clone(reply)
 }
 
-function buildCoachReply(message: string, context: {
-  goal: string
-  calorieGoal: number
-  sleepHours: number
-  hydration: number
-  workoutMinutes: number
-}): string {
-  const text = message.toLowerCase()
-
-  if (text.includes('sleep') || text.includes('recover')) {
-    const sleepNote = context.sleepHours
-      ? `Your latest sleep entry is ${context.sleepHours} hours.`
-      : 'You do not have a recent sleep entry yet.'
-    return `${sleepNote} Aim for a consistent 7.5–9 hour window, keep tonight’s session lighter if fatigue is high, and use the Recovery page before adding intensity.`
-  }
-
-  if (text.includes('calorie') || text.includes('food') || text.includes('nutrition') || text.includes('meal')) {
-    return `Your current calorie target is ${context.calorieGoal.toLocaleString()} kcal/day. Keep protein consistent, build meals around minimally processed foods, and adjust portions based on your weekly trend rather than a single day.`
-  }
-
-  if (text.includes('workout') || text.includes('plan') || text.includes('strength') || text.includes('cardio')) {
-    const recoveryHint = context.sleepHours >= 7 && context.hydration >= 2_000
-      ? 'Your latest recovery markers support a normal training day.'
-      : 'Your recovery markers suggest keeping today’s intensity controlled.'
-    return `${recoveryHint} For your goal${context.goal ? ` (${context.goal})` : ''}, use 3–5 structured training days, keep at least one recovery day between demanding sessions, and progress volume gradually.`
-  }
-
-  if (text.includes('water') || text.includes('hydrat')) {
-    return `Your latest hydration entry is ${context.hydration.toLocaleString()} ml. A practical daily target is around 2.5 L, with more fluid around longer or hotter training sessions.`
-  }
-
-  return `For ${context.goal || 'your current fitness goal'}, focus on consistency first: progressive training, enough protein, regular sleep, and a weekly trend check. I can help you turn that into a workout plan, nutrition target, or recovery routine.`
+export async function clearChatHistory(): Promise<void> {
+  await fakeDelay()
+  const state = getState()
+  state.chatMessages = []
+  saveState(state)
 }
 
 export async function getActivity(limit = 30): Promise<ActivityItem[]> {

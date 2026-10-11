@@ -254,7 +254,7 @@ export function WorkoutsPage() {
                   onClick={() => setFilter(f)}
                   className="whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-95"
                   style={active
-                    ? { background: st?.gradient ?? 'var(--foreground)', color: '#fff', boxShadow: 'var(--shadow-sm)' }
+                    ? { background: st?.gradient ?? 'var(--primary)', color: '#fff', boxShadow: 'var(--shadow-sm)' }
                     : { background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground-muted)' }}
                 >
                   {f}

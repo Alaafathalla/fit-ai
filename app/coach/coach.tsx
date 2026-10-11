@@ -21,7 +21,7 @@ export function AICoachPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="grid size-9 place-items-center rounded-lg border border-slate-700 bg-slate-800 text-blue-400">
+                <div className="grid size-9 place-items-center rounded-lg border border-slate-700 bg-slate-800 text-purple-400">
                   <Compass className="size-4" />
                 </div>
                 <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">Performance Intelligence</span>

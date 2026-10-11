@@ -27,7 +27,7 @@ const PLANS = [
     suffix: '/month',
     icon: Activity,
     featured: true,
-    gradient: '#2563eb',
+    gradient: 'var(--primary)',
     features: [
       'Everything in Free',
       'Training Advisor sessions',

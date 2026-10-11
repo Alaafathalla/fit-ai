@@ -11,8 +11,9 @@ export interface AccentColor {
 }
 
 export const ACCENT_COLORS: AccentColor[] = [
+  { id: 'purple', label: 'Royal Purple', hex: '#7c3aed', light: '#f5f3ff', dark: '#6d28d9' },
+  { id: 'violet', label: 'Electric Violet', hex: '#8b5cf6', light: '#f3e8ff', dark: '#7c3aed' },
   { id: 'blue', label: 'Cobalt Blue', hex: '#2563eb', light: '#eff6ff', dark: '#1d4ed8' },
-  { id: 'slate', label: 'Obsidian Slate', hex: '#0f172a', light: '#f1f5f9', dark: '#020617' },
   { id: 'emerald', label: 'Emerald Green', hex: '#059669', light: '#ecfdf5', dark: '#047857' },
   { id: 'amber', label: 'Kinetic Orange', hex: '#ea580c', light: '#fff7ed', dark: '#c2410c' },
   { id: 'red', label: 'Crimson Red', hex: '#dc2626', light: '#fef2f2', dark: '#b91c1c' },
@@ -29,11 +30,13 @@ export function getStoredThemeMode(): ThemeMode {
 }
 
 export function getStoredAccent(): string {
-  if (typeof window === 'undefined') return 'blue'
-  return localStorage.getItem(ACCENT_KEY) || 'blue'
+  if (typeof window === 'undefined') return 'purple'
+  const val = localStorage.getItem(ACCENT_KEY)
+  if (!val || val === 'slate' || val === 'blue') return 'purple'
+  return val
 }
 
-export function applyTheme(mode: ThemeMode, accentId: string = 'blue') {
+export function applyTheme(mode: ThemeMode, accentId: string = 'purple') {
   if (typeof window === 'undefined') return
 
   const root = document.documentElement

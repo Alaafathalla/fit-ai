@@ -33,7 +33,7 @@ export function AuthShell({ eyebrow, title, description, children, footer }: Aut
 
         <div className="relative z-10 max-w-xl py-10">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-800/90 px-3 py-1 text-xs font-semibold text-slate-200">
-            <Activity className="size-3.5 text-blue-400" />
+            <Activity className="size-3.5 text-purple-400" />
             <span>High-Performance Training Cockpit</span>
           </div>
           <h2 className="max-w-lg text-4xl font-black tracking-[-0.04em] text-white xl:text-5xl">
@@ -46,7 +46,7 @@ export function AuthShell({ eyebrow, title, description, children, footer }: Aut
           <div className="mt-9 grid gap-3">
             {highlights.map(({ icon: Icon, label, text }) => (
               <div key={label} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 backdrop-blur-sm">
-                <div className="grid size-10 shrink-0 place-items-center rounded-lg border border-slate-700/60 bg-slate-800 text-blue-400">
+                <div className="grid size-10 shrink-0 place-items-center rounded-lg border border-slate-700/60 bg-slate-800 text-purple-400">
                   <Icon className="size-4" />
                 </div>
                 <div>

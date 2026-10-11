@@ -28,7 +28,7 @@ export function SettingsPage() {
   const [error,         setError]         = useState('')
 
   const [themeMode,     setThemeMode]     = useState<ThemeMode>('light')
-  const [accentId,      setAccentId]      = useState<string>('blue')
+  const [accentId,      setAccentId]      = useState<string>('purple')
 
   const [notifications, setNotifications] = useState<Record<NotifKey, boolean>>({
     workouts: true, nutrition: true, coach: false,
@@ -173,7 +173,7 @@ export function SettingsPage() {
                 setThemeMode(nextMode)
                 applyTheme(nextMode, accentId)
               }}
-              className="flex items-center gap-1.5 rounded-full border border-sky-100 bg-[#f0f7ff] px-4 py-2 text-xs font-semibold text-[#2563eb] transition hover:bg-[#e0efff] active:scale-95 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-400"
+              className="flex items-center gap-1.5 rounded-full border border-purple-100 bg-[#fbf8ff] px-4 py-2 text-xs font-semibold text-[#7c3aed] transition hover:bg-[#f3e8ff] active:scale-95 dark:border-purple-900/40 dark:bg-purple-950/40 dark:text-purple-400"
             >
               {themeMode === 'dark' ? (
                 <>

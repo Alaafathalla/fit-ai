@@ -1,7 +1,8 @@
 'use client'
 
 import { Shell } from '@/components/shell'
-import { Spinner } from '@/components/spinner'
+import { EmptyState } from '@/components/empty-state'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getWorkouts, type Workout, type WorkoutType } from '@/lib/api'
 import {
   Check,
@@ -265,7 +266,17 @@ export function WorkoutsPage() {
         </div>
 
         {loading ? (
-          <Spinner label="Loading workouts…" />
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="card space-y-4 overflow-hidden rounded-2xl p-5">
+                <Skeleton className="h-44 w-full rounded-xl" />
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : error ? (
           <div className="card mt-6 p-8 text-center text-sm" style={{ color: 'var(--danger)' }}>{error}</div>
         ) : (
@@ -280,12 +291,13 @@ export function WorkoutsPage() {
                 {visible.map((w, i) => <WorkoutCard key={w.id} w={w} index={i} />)}
               </div>
             ) : (
-              <div className="card p-12 text-center">
-                <p className="font-semibold" style={{ color: 'var(--foreground)' }}>No workouts match your search.</p>
-                <button onClick={() => setSearch('')} className="mt-2 text-sm font-bold" style={{ color: 'var(--primary)' }}>
-                  Clear search
-                </button>
-              </div>
+              <EmptyState
+                icon={Search}
+                title="No workouts match your search"
+                description={`We couldn't find any workout matching "${search}". Try searching for another term or clear the filter.`}
+                actionLabel="Clear search"
+                onAction={() => setSearch('')}
+              />
             )}
 
             <div className="animate-fade-in mt-8 flex items-center justify-center gap-2 text-sm" style={{ color: 'var(--foreground-muted)', animationDelay: '200ms' }}>

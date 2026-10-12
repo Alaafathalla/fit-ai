@@ -1,5 +1,12 @@
 import { getCurrentAuthUser, updateCurrentAuthIdentity } from './auth'
-import { generateCoachReply } from './coach-ai'
+import {
+  generateCoachReply,
+  generateCustomFitnessPlan,
+  type CustomFitnessPlan,
+  type CustomWorkoutDay,
+  type CustomMealItem,
+} from './coach-ai'
+export type { CustomFitnessPlan, CustomWorkoutDay, CustomMealItem } from './coach-ai'
 
 /**
  * FitAI fake API.
@@ -586,13 +593,37 @@ export async function logMeal(mealId: string): Promise<{ ok: boolean; logId: str
   return { ok: true, logId }
 }
 
+function getPopulatedStats(state: FakeState, safeDays: number): DailyStats[] {
+  const stats = [...state.stats].sort((a, b) => a.date.localeCompare(b.date))
+
+  if (stats.length < safeDays) {
+    const oldestDate = new Date(stats[0]?.date || new Date())
+    const baseWeight = state.user.currentWeight || 78.4
+    const needed = safeDays - stats.length
+    for (let i = needed; i >= 1; i--) {
+      const d = new Date(oldestDate)
+      d.setDate(oldestDate.getDate() - i)
+      stats.unshift({
+        date: isoDate(d),
+        weight: +(baseWeight + (i * 0.04)).toFixed(1),
+        calories: 1850 + ((i * 45) % 400),
+        calorieGoal: state.user.calorieGoal || 2000,
+        workoutMinutes: i % 2 === 0 ? 45 : 0,
+        steps: 6500 + ((i * 410) % 3500),
+        hydration: 2100 + ((i * 120) % 600),
+        sleepHours: +(7.0 + ((i * 0.2) % 1.5)).toFixed(1),
+      })
+    }
+  }
+
+  return stats.slice(-safeDays)
+}
+
 export async function getDailyStats(days = 7): Promise<DailyStats[]> {
   await fakeDelay()
-  const safeDays = Math.max(1, Math.min(90, Math.trunc(days) || 7))
-  const stats = [...getState().stats]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-safeDays)
-  return clone(stats)
+  const safeDays = Math.max(1, Math.min(180, Math.trunc(days) || 7))
+  const state = getState()
+  return clone(getPopulatedStats(state, safeDays))
 }
 
 export async function updateHydration(hydration: number): Promise<{ ok: boolean; hydration: number }> {
@@ -678,8 +709,9 @@ export async function updateUserProfile(data: {
   return { ok: true, name: state.user.name }
 }
 
-function progressPayload(state: FakeState): { weekly: WeeklyProgress[]; metrics: ProgressMetric[] } {
-  const stats = [...state.stats].sort((a, b) => a.date.localeCompare(b.date)).slice(-7)
+function progressPayload(state: FakeState, days = 7): { weekly: WeeklyProgress[]; metrics: ProgressMetric[] } {
+  const safeDays = Math.max(1, Math.min(180, Math.trunc(days) || 7))
+  const stats = getPopulatedStats(state, safeDays)
 
   const weekly = stats.map((stat) => ({
     day: DAY_LABELS[new Date(`${stat.date}T12:00:00`).getDay()],
@@ -742,14 +774,14 @@ function progressPayload(state: FakeState): { weekly: WeeklyProgress[]; metrics:
   return { weekly, metrics }
 }
 
-export async function getWeeklyProgress(): Promise<WeeklyProgress[]> {
+export async function getWeeklyProgress(days = 7): Promise<WeeklyProgress[]> {
   await fakeDelay()
-  return clone(progressPayload(getState()).weekly)
+  return clone(progressPayload(getState(), days).weekly)
 }
 
-export async function getProgressMetrics(): Promise<ProgressMetric[]> {
+export async function getProgressMetrics(days = 7): Promise<ProgressMetric[]> {
   await fakeDelay()
-  return clone(progressPayload(getState()).metrics)
+  return clone(progressPayload(getState(), days).metrics)
 }
 
 export async function getTodayNutrition(): Promise<{
@@ -867,4 +899,182 @@ export async function getActivity(limit = 30): Promise<ActivityItem[]> {
 export function resetFakeApi(): void {
   const state = makeDefaultState()
   saveState(state)
+}
+
+// ── Custom AI Fitness Plan ────────────────────────────────────────────────────
+
+const CUSTOM_PLAN_KEY = 'fitai-custom-plan-v1'
+
+export async function getCustomFitnessPlan(): Promise<CustomFitnessPlan> {
+  await fakeDelay()
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem(CUSTOM_PLAN_KEY)
+      if (stored) return JSON.parse(stored) as CustomFitnessPlan
+    } catch {
+      // ignore
+    }
+  }
+
+  const state = getState()
+  const defaultPlan = generateCustomFitnessPlan({
+    athleteName: state.user.name,
+    goal: state.user.goal,
+    currentWeight: state.user.currentWeight,
+    targetWeight: state.user.targetWeight,
+  })
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(CUSTOM_PLAN_KEY, JSON.stringify(defaultPlan))
+  }
+  return defaultPlan
+}
+
+export async function generateAndSaveFitnessPlan(input?: {
+  athleteName?: string
+  goal?: string
+  currentWeight?: number
+  targetWeight?: number
+  daysPerWeek?: number
+  level?: string
+}): Promise<CustomFitnessPlan> {
+  await fakeDelay()
+  const state = getState()
+  const newPlan = generateCustomFitnessPlan({
+    athleteName: input?.athleteName || state.user.name,
+    goal: input?.goal || state.user.goal,
+    currentWeight: input?.currentWeight || state.user.currentWeight,
+    targetWeight: input?.targetWeight || state.user.targetWeight,
+    daysPerWeek: input?.daysPerWeek || 4,
+    level: input?.level || 'Intermediate',
+  })
+
+  // Synchronize user calorie target with AI calculated plan
+  state.user.calorieGoal = newPlan.nutritionPlan.dailyCalories
+  saveState(state)
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(CUSTOM_PLAN_KEY, JSON.stringify(newPlan))
+  }
+  return newPlan
+}
+
+// ── Coach Portal Management ───────────────────────────────────────────────────
+
+export interface CoachClientItem {
+  id: string
+  name: string
+  initials: string
+  email: string
+  goal: string
+  adherence: number
+  checkIn: string
+  status: 'On track' | 'Review' | 'Needs attention'
+  weight: number
+  caloriesAvg: number
+  lastSession: string
+  notes?: string
+}
+
+const COACH_CLIENTS_KEY = 'fitai-coach-clients-v1'
+
+const DEFAULT_COACH_CLIENTS: CoachClientItem[] = [
+  {
+    id: 'c1',
+    name: 'Maya Hassan',
+    initials: 'MH',
+    email: 'maya@fitai.app',
+    goal: 'Strength & recomposition',
+    adherence: 92,
+    checkIn: 'Today',
+    status: 'On track',
+    weight: 64.2,
+    caloriesAvg: 2150,
+    lastSession: 'Upper Body Hypertrophy (45m ago)',
+    notes: 'Squat depth has improved cleanly. Keep maintaining 150g protein daily.',
+  },
+  {
+    id: 'c2',
+    name: 'Omar Saleh',
+    initials: 'OS',
+    email: 'omar@fitai.app',
+    goal: 'Fat loss & metabolic conditioning',
+    adherence: 84,
+    checkIn: 'Tomorrow',
+    status: 'Review',
+    weight: 88.5,
+    caloriesAvg: 1980,
+    lastSession: 'Zone 2 Cardio & Core (Yesterday)',
+    notes: 'Reduce evening snack calories by 150 kcal. Focus on hydration recovery.',
+  },
+  {
+    id: 'c3',
+    name: 'Nadia Kareem',
+    initials: 'NK',
+    email: 'nadia@fitai.app',
+    goal: '5K race performance',
+    adherence: 96,
+    checkIn: 'Fri',
+    status: 'On track',
+    weight: 58.0,
+    caloriesAvg: 2300,
+    lastSession: 'Tempo Intervals (Today)',
+    notes: 'Taper week ahead of Saturday race. Ensure glycogen loading Friday evening.',
+  },
+  {
+    id: 'c4',
+    name: 'Adam Nabil',
+    initials: 'AN',
+    email: 'adam@fitai.app',
+    goal: 'Mobility & spinal recovery',
+    adherence: 78,
+    checkIn: 'Sat',
+    status: 'Needs attention',
+    weight: 79.1,
+    caloriesAvg: 2100,
+    lastSession: 'Deep Hip Mobility (3 days ago)',
+    notes: 'Reported lower back stiffness after heavy deadlifts. Form check video requested.',
+  },
+]
+
+let memoryClientsCache: CoachClientItem[] | null = null
+
+export async function getCoachClients(): Promise<CoachClientItem[]> {
+  await fakeDelay()
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem(COACH_CLIENTS_KEY)
+      if (stored) return JSON.parse(stored) as CoachClientItem[]
+    } catch {
+      // ignore
+    }
+  }
+  if (memoryClientsCache) return clone(memoryClientsCache)
+  return clone(DEFAULT_COACH_CLIENTS)
+}
+
+export async function updateCoachClient(data: {
+  athleteId: string
+  status?: 'On track' | 'Review' | 'Needs attention'
+  notes?: string
+}): Promise<{ ok: boolean; client?: CoachClientItem }> {
+  await fakeDelay()
+  let clients = await getCoachClients()
+  let updated: CoachClientItem | undefined
+  clients = clients.map((c) => {
+    if (c.id === data.athleteId) {
+      updated = {
+        ...c,
+        ...(data.status ? { status: data.status } : {}),
+        ...(data.notes !== undefined ? { notes: data.notes } : {}),
+      }
+      return updated
+    }
+    return c
+  })
+  memoryClientsCache = clients
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(COACH_CLIENTS_KEY, JSON.stringify(clients))
+  }
+  return { ok: true, client: updated }
 }

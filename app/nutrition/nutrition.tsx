@@ -2,7 +2,8 @@
 
 import { CalorieRing, MacroBar } from '@/components/charts'
 import { Shell } from '@/components/shell'
-import { Spinner } from '@/components/spinner'
+import { EmptyState } from '@/components/empty-state'
+import { CardSkeleton, Skeleton } from '@/components/ui/skeleton'
 import {
   getDailyStats,
   getMeals,
@@ -11,7 +12,7 @@ import {
   updateHydration,
   type Meal,
 } from '@/lib/api'
-import { Check, Droplets, Loader2, Plus } from 'lucide-react'
+import { Check, Droplets, Loader2, Plus, UtensilsCrossed } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 const MEAL_TYPES: (Meal['mealType'] | 'All')[] = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack']
@@ -104,7 +105,27 @@ export function NutritionPage() {
           </button>
         </div>
 
-        {loading ? <Spinner label="Loading nutrition data…" /> : error && !nutrition ? (
+        {loading ? (
+          <div className="space-y-6">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="card space-y-4 overflow-hidden rounded-2xl p-5">
+                  <Skeleton className="h-44 w-full rounded-xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : error && !nutrition ? (
           <div className="card p-8 text-center text-sm" style={{ color: 'var(--danger)' }}>{error}</div>
         ) : (
           <>
@@ -177,84 +198,94 @@ export function NutritionPage() {
             </div>
 
             {/* Meal grid */}
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {visible.map((meal, i) => (
-                <div
-                  key={meal.id}
-                  className="animate-fade-up overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1.5"
-                  style={{
-                    background: 'var(--card)',
-                    border: '1px solid var(--border)',
-                    boxShadow: 'var(--shadow-md)',
-                    animationDelay: `${i * 60}ms`,
-                  }}
-                >
-                  <div className="relative h-44 overflow-hidden">
-                    <img
-                      src={meal.image}
-                      alt={meal.name}
-                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
-                    <span
-                      className="absolute left-4 top-4 badge text-white text-[11px]"
-                      style={{ background: MEAL_GRADIENTS[meal.mealType] }}
-                    >
-                      {meal.mealType}
-                    </span>
-                    <span
-                      className="absolute right-4 top-4 badge"
-                      style={{ background: 'rgba(255,255,255,0.93)', color: '#374151' }}
-                    >
-                      {meal.prepTime} min
-                    </span>
-                    {/* Name overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h3 className="font-bold text-white drop-shadow">{meal.name}</h3>
+            {visible.length ? (
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {visible.map((meal, i) => (
+                  <div
+                    key={meal.id}
+                    className="animate-fade-up overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1.5"
+                    style={{
+                      background: 'var(--card)',
+                      border: '1px solid var(--border)',
+                      boxShadow: 'var(--shadow-md)',
+                      animationDelay: `${i * 60}ms`,
+                    }}
+                  >
+                    <div className="relative h-44 overflow-hidden">
+                      <img
+                        src={meal.image}
+                        alt={meal.name}
+                        className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+                      <span
+                        className="absolute left-4 top-4 badge text-white text-[11px]"
+                        style={{ background: MEAL_GRADIENTS[meal.mealType] }}
+                      >
+                        {meal.mealType}
+                      </span>
+                      <span
+                        className="absolute right-4 top-4 badge"
+                        style={{ background: 'rgba(255,255,255,0.93)', color: '#374151' }}
+                      >
+                        {meal.prepTime} min
+                      </span>
+                      {/* Name overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <h3 className="font-bold text-white drop-shadow">{meal.name}</h3>
+                      </div>
+                    </div>
+
+                    <div className="p-4">
+                      {/* Macro grid */}
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        {[
+                          { label: 'Cal',  value: meal.calories },
+                          { label: 'Pro',  value: `${meal.protein}g` },
+                          { label: 'Carb', value: `${meal.carbs}g` },
+                          { label: 'Fat',  value: `${meal.fat}g` },
+                        ].map(({ label, value }) => (
+                          <div key={label} className="rounded-xl py-2.5" style={{ background: 'var(--background-alt)' }}>
+                            <p className="text-[10px] font-semibold" style={{ color: 'var(--foreground-muted)' }}>{label}</p>
+                            <p className="mt-0.5 text-xs font-bold" style={{ color: 'var(--foreground)' }}>{value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Tags */}
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {meal.tags.map((t) => <span key={t} className="badge badge-neutral">{t}</span>)}
+                      </div>
+
+                      <button
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all duration-200 active:scale-95 disabled:opacity-60"
+                        style={{
+                          background: loggedId === meal.id ? 'var(--success)' : 'color-mix(in srgb, var(--primary) 12%, transparent)',
+                          color: loggedId === meal.id ? '#fff' : 'var(--primary)',
+                        }}
+                        onClick={() => handleLogMeal(meal.id)}
+                        disabled={loggingId !== null}
+                      >
+                        {loggingId === meal.id
+                          ? <><Loader2 className="size-4 animate-spin" /> Adding…</>
+                          : loggedId === meal.id
+                            ? <><Check className="size-4" /> Added to log</>
+                            : <><Plus className="size-4" /> Add to log</>}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="p-4">
-                    {/* Macro grid */}
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                      {[
-                        { label: 'Cal',  value: meal.calories },
-                        { label: 'Pro',  value: `${meal.protein}g` },
-                        { label: 'Carb', value: `${meal.carbs}g` },
-                        { label: 'Fat',  value: `${meal.fat}g` },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="rounded-xl py-2.5" style={{ background: 'var(--background-alt)' }}>
-                          <p className="text-[10px] font-semibold" style={{ color: 'var(--foreground-muted)' }}>{label}</p>
-                          <p className="mt-0.5 text-xs font-bold" style={{ color: 'var(--foreground)' }}>{value}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Tags */}
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {meal.tags.map((t) => <span key={t} className="badge badge-neutral">{t}</span>)}
-                    </div>
-
-                    <button
-                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all duration-200 active:scale-95 disabled:opacity-60"
-                      style={{
-                        background: loggedId === meal.id ? 'var(--success)' : 'color-mix(in srgb, var(--primary) 12%, transparent)',
-                        color: loggedId === meal.id ? '#fff' : 'var(--primary)',
-                      }}
-                      onClick={() => handleLogMeal(meal.id)}
-                      disabled={loggingId !== null}
-                    >
-                      {loggingId === meal.id
-                        ? <><Loader2 className="size-4 animate-spin" /> Adding…</>
-                        : loggedId === meal.id
-                          ? <><Check className="size-4" /> Added to log</>
-                          : <><Plus className="size-4" /> Add to log</>}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={UtensilsCrossed}
+                title="No recipes found"
+                description={`No recipes match the "${mealFilter}" category filter.`}
+                actionLabel="Show all meals"
+                onAction={() => setMealFilter('All')}
+              />
+            )}
 
             {/* Hydration tracker */}
             <div className="animate-fade-up mt-6 card p-5 sm:p-6" style={{ animationDelay: '160ms' }}>

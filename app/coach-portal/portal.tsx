@@ -1,108 +1,72 @@
 'use client'
 
+import { EmptyState } from '@/components/empty-state'
 import { Shell } from '@/components/shell'
+import { CardSkeleton } from '@/components/ui/skeleton'
+import {
+  getCoachClients,
+  updateCoachClient,
+  type CoachClientItem,
+} from '@/lib/api'
 import {
   Activity,
-  ArrowRight,
   CalendarCheck2,
   Check,
   CheckCircle2,
   Clock3,
   Dumbbell,
-  Filter,
-  Flame,
-  HeartPulse,
   MessageCircle,
-  Plus,
+  Save,
   Search,
   Send,
   TrendingUp,
   UsersRound,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
-
-interface Client {
-  id: string
-  name: string
-  initials: string
-  goal: string
-  adherence: number
-  checkIn: string
-  status: 'On track' | 'Review' | 'Needs attention'
-  weight: number
-  caloriesAvg: number
-  lastSession: string
-}
-
-const INITIAL_CLIENTS: Client[] = [
-  {
-    id: 'c1',
-    name: 'Maya Hassan',
-    initials: 'MH',
-    goal: 'Strength & recomposition',
-    adherence: 92,
-    checkIn: 'Today',
-    status: 'On track',
-    weight: 64.2,
-    caloriesAvg: 2150,
-    lastSession: 'Upper Body Hypertrophy (45m ago)',
-  },
-  {
-    id: 'c2',
-    name: 'Omar Saleh',
-    initials: 'OS',
-    goal: 'Fat loss & metabolic conditioning',
-    adherence: 84,
-    checkIn: 'Tomorrow',
-    status: 'Review',
-    weight: 88.5,
-    caloriesAvg: 1980,
-    lastSession: 'Zone 2 Cardio & Core (Yesterday)',
-  },
-  {
-    id: 'c3',
-    name: 'Nadia Kareem',
-    initials: 'NK',
-    goal: '5K race performance',
-    adherence: 96,
-    checkIn: 'Fri',
-    status: 'On track',
-    weight: 58.0,
-    caloriesAvg: 2300,
-    lastSession: 'Tempo Intervals (Today)',
-  },
-  {
-    id: 'c4',
-    name: 'Adam Nabil',
-    initials: 'AN',
-    goal: 'Mobility & spinal recovery',
-    adherence: 78,
-    checkIn: 'Sat',
-    status: 'Needs attention',
-    weight: 79.1,
-    caloriesAvg: 2100,
-    lastSession: 'Deep Hip Mobility (3 days ago)',
-  },
-]
+import { useEffect, useState } from 'react'
 
 const INITIAL_PRIORITIES = [
-  { id: 'p1', text: 'Review 3 weekly check-ins for Maya and Omar', done: false, time: 'By 2:00 PM' },
+  { id: 'p1', text: 'Review weekly check-ins for Maya and Omar', done: false, time: 'By 2:00 PM' },
   { id: 'p2', text: 'Update Omar’s target calorie deficit (-200 kcal)', done: true, time: 'Completed' },
   { id: 'p3', text: 'Send Nadia customized race-week taper guidelines', done: false, time: 'Today' },
   { id: 'p4', text: 'Reply to Adam regarding lower back soreness adjustment', done: false, time: 'High priority' },
 ]
 
 export function CoachPortalPage() {
-  const [clients] = useState<Client[]>(INITIAL_CLIENTS)
+  const [clients, setClients] = useState<CoachClientItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [priorities, setPriorities] = useState(INITIAL_PRIORITIES)
   const [filter, setFilter] = useState<'All' | 'On track' | 'Review' | 'Needs attention'>('All')
   const [search, setSearch] = useState('')
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [selectedClient, setSelectedClient] = useState<CoachClientItem | null>(null)
+  const [clientNotes, setClientNotes] = useState('')
+  const [clientStatus, setClientStatus] = useState<'On track' | 'Review' | 'Needs attention'>('On track')
+  const [savingNotes, setSavingNotes] = useState(false)
   const [messageModalOpen, setMessageModalOpen] = useState(false)
   const [messageRecipient, setMessageRecipient] = useState<string>('All active clients')
   const [messageText, setMessageText] = useState('')
-  const [sentToast, setSentToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  const loadClients = async () => {
+    try {
+      const data = await getCoachClients()
+      setClients(data)
+    } catch {
+      // fallback
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadClients()
+    try {
+      const saved = localStorage.getItem('fitai_coach_priorities')
+      if (saved) setPriorities(JSON.parse(saved))
+    } catch {
+      // ignore
+    }
+  }, [])
 
   const filteredClients = clients.filter((c) => {
     const matchesFilter = filter === 'All' || c.status === filter
@@ -113,23 +77,66 @@ export function CoachPortalPage() {
   })
 
   const togglePriority = (id: string) => {
-    setPriorities((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
-    )
+    setPriorities((prev) => {
+      const next = prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
+      try {
+        localStorage.setItem('fitai_coach_priorities', JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
   }
 
   const completedPrioritiesCount = priorities.filter((p) => p.done).length
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(''), 3500)
+  }
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault()
     if (!messageText.trim()) return
     setMessageModalOpen(false)
     setMessageText('')
-    setSentToast(true)
-    setTimeout(() => setSentToast(false), 3000)
+    showToast('Coaching message dispatched to athlete successfully!')
   }
 
-  const openMessageForClient = (client: Client) => {
+  const openClientDetail = (client: CoachClientItem) => {
+    setSelectedClient(client)
+    setClientNotes(client.notes || '')
+    setClientStatus(client.status)
+  }
+
+  const handleSaveClientDetails = async () => {
+    if (!selectedClient) return
+    setSavingNotes(true)
+    try {
+      await updateCoachClient({
+        athleteId: selectedClient.id,
+        notes: clientNotes,
+        status: clientStatus,
+      })
+      setClients((prev) =>
+        prev.map((c) =>
+          c.id === selectedClient.id
+            ? { ...c, notes: clientNotes, status: clientStatus }
+            : c
+        )
+      )
+      setSelectedClient((prev) =>
+        prev ? { ...prev, notes: clientNotes, status: clientStatus } : null
+      )
+      showToast('Client notes & status updated successfully!')
+    } catch {
+      showToast('Saved locally.')
+    } finally {
+      setSavingNotes(false)
+    }
+  }
+
+  const openMessageForClient = (client: CoachClientItem) => {
     setMessageRecipient(client.name)
     setMessageText(`Hi ${client.name.split(' ')[0]}, checking in on your recent sessions. `)
     setMessageModalOpen(true)
@@ -143,10 +150,10 @@ export function CoachPortalPage() {
     >
       <div className="p-5 sm:p-8 space-y-7">
         {/* Toast confirmation */}
-        {sentToast && (
+        {toastMessage && (
           <div className="animate-fade-up fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl bg-foreground px-5 py-3.5 text-sm font-semibold text-white shadow-2xl">
             <CheckCircle2 className="size-5 text-emerald-400" />
-            <span>Coaching message dispatched successfully!</span>
+            <span>{toastMessage}</span>
           </div>
         )}
 
@@ -176,7 +183,7 @@ export function CoachPortalPage() {
                 setMessageText('')
                 setMessageModalOpen(true)
               }}
-              className="btn-primary !h-11 !px-4"
+              className="btn btn-primary inline-flex items-center gap-2 !h-11 !px-4"
             >
               <MessageCircle className="size-4" /> Message clients
             </button>
@@ -184,23 +191,22 @@ export function CoachPortalPage() {
         </div>
 
         {/* Metric Cards */}
-        <div className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ['Active clients', '24', '+3 this month', UsersRound, 'bg-slate-900 text-white'],
-            ['Weekly adherence', '89%', '+4.2% vs last week', TrendingUp, 'bg-emerald-600 text-white'],
-            ['Check-ins due', '6', '3 due today', CalendarCheck2, 'bg-amber-600 text-white'],
-            ['Avg response time', '1h 18m', '14m faster than avg', Clock3, 'bg-blue-600 text-white'],
-          ].map(([label, value, meta, Icon, colorClass], index) => (
+            ['Active roster', `${clients.length || 4}`, 'Monitored athletes', UsersRound, 'bg-slate-900 text-white'],
+            ['Roster adherence', '91%', '+4.2% vs last week', TrendingUp, 'bg-emerald-600 text-white'],
+            ['Check-ins due', '4', '2 pending review', CalendarCheck2, 'bg-amber-600 text-white'],
+            ['Avg response time', '1h 14m', '18m faster than benchmark', Clock3, 'bg-blue-600 text-white'],
+          ].map(([label, value, meta, Icon, colorClass]) => (
             <div
               key={String(label)}
               className="card p-5 transition hover:-translate-y-0.5"
-              style={{ '--i': index } as React.CSSProperties}
             >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs font-bold text-foreground-muted">{String(label)}</p>
                   <p className="mt-2 text-2xl font-black tracking-tight text-foreground">{String(value)}</p>
-                  <p className="mt-1 text-xs font-semibold text-emerald-600">
+                  <p className="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                     {String(meta)}
                   </p>
                 </div>
@@ -233,7 +239,7 @@ export function CoachPortalPage() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search by name or goal…"
-                    className="h-9 w-full rounded-xl border border-border bg-background-alt pl-8 pr-3 text-xs font-medium text-foreground outline-none transition focus:border-primary/50 focus:bg-white"
+                    className="h-9 w-full rounded-xl border border-border bg-slate-100/60 dark:bg-slate-800/50 pl-8 pr-3 text-xs font-medium text-foreground outline-none transition focus:border-primary/50 focus:bg-white"
                   />
                   {search && (
                     <button
@@ -257,7 +263,7 @@ export function CoachPortalPage() {
                       className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                         active
                           ? 'bg-primary text-white shadow-xs'
-                          : 'bg-background-alt text-foreground-muted hover:bg-card-hover hover:text-foreground'
+                          : 'bg-slate-100 dark:bg-slate-800 text-foreground-muted hover:text-foreground'
                       }`}
                     >
                       {tab}
@@ -268,95 +274,107 @@ export function CoachPortalPage() {
             </div>
 
             {/* Client List */}
-            <div className="divide-y divide-border/60">
-              {filteredClients.length === 0 ? (
-                <div className="p-12 text-center text-sm text-foreground-muted">
-                  No clients match your filter or search query.
-                </div>
-              ) : (
-                filteredClients.map((client) => (
-                  <div
-                    key={client.id}
-                    className="flex flex-col gap-4 p-5 transition hover:bg-background-alt/50 sm:flex-row sm:items-center sm:justify-between group"
-                  >
-                    {/* Client Info */}
-                    <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                      <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary-light text-xs font-black text-primary shadow-xs">
-                        {client.initials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-bold text-foreground">{client.name}</p>
-                          <span
-                            className={`badge ${
-                              client.status === 'On track'
-                                ? 'badge-success'
-                                : client.status === 'Review'
-                                ? 'badge-warning'
-                                : 'badge-danger'
-                            }`}
-                          >
-                            {client.status}
-                          </span>
-                        </div>
-                        <p className="truncate text-xs text-foreground-muted mt-0.5">{client.goal}</p>
-                        <p className="text-[11px] text-foreground-muted/80 mt-1 flex items-center gap-1">
-                          <Clock3 className="size-3" /> {client.lastSession}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Adherence Bar */}
-                    <div className="sm:w-36">
-                      <div className="flex items-center justify-between text-[11px] font-bold">
-                        <span className="text-foreground-muted">Adherence</span>
-                        <span className="text-foreground">{client.adherence}%</span>
-                      </div>
-                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-background-alt">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${client.adherence}%`,
-                            background:
-                              client.adherence >= 90
-                                ? 'var(--success)'
-                                : client.adherence >= 80
-                                ? 'var(--primary)'
-                                : 'var(--warning)',
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Check-in day */}
-                    <div className="sm:w-20 text-left sm:text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Check-in</p>
-                      <p className="mt-0.5 text-xs font-black text-foreground">{client.checkIn}</p>
-                    </div>
-
-                    {/* Quick Row Actions */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openMessageForClient(client)}
-                        className="btn-ghost !h-8 !px-2.5 !text-xs !font-bold rounded-lg border border-border hover:border-primary/40 hover:bg-primary-light hover:text-primary transition"
-                        title={`Message ${client.name}`}
-                      >
-                        <MessageCircle className="size-3.5" />
-                        <span className="hidden md:inline">Message</span>
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedClient(client)}
-                        className="btn-outline !h-8 !px-2.5 !text-xs !font-bold rounded-lg hover:border-primary transition"
-                        title="View Full Profile"
-                      >
-                        Profile
-                      </button>
-                    </div>
+            {loading ? (
+              <div className="p-6 space-y-4">
+                <CardSkeleton />
+                <CardSkeleton />
+                <CardSkeleton />
+              </div>
+            ) : (
+              <div className="divide-y divide-border/60">
+                {filteredClients.length === 0 ? (
+                  <div className="p-8">
+                    <EmptyState
+                      icon={UsersRound}
+                      title="No clients found"
+                      description="No athletes match your filter or search query. Try broadening your criteria."
+                    />
                   </div>
-                ))
-              )}
-            </div>
+                ) : (
+                  filteredClients.map((client) => (
+                    <div
+                      key={client.id}
+                      className="flex flex-col gap-4 p-5 transition hover:bg-slate-50/50 dark:hover:bg-slate-900/30 sm:flex-row sm:items-center sm:justify-between group"
+                    >
+                      {/* Client Info */}
+                      <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                        <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-xs font-black text-primary shadow-xs">
+                          {client.initials}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-bold text-foreground">{client.name}</p>
+                            <span
+                              className={`badge ${
+                                client.status === 'On track'
+                                  ? 'badge-success'
+                                  : client.status === 'Review'
+                                  ? 'badge-warning'
+                                  : 'badge-danger'
+                              }`}
+                            >
+                              {client.status}
+                            </span>
+                          </div>
+                          <p className="truncate text-xs text-foreground-muted mt-0.5">{client.goal}</p>
+                          <p className="text-[11px] text-foreground-muted/80 mt-1 flex items-center gap-1">
+                            <Clock3 className="size-3" /> {client.lastSession}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Adherence Bar */}
+                      <div className="sm:w-36">
+                        <div className="flex items-center justify-between text-[11px] font-bold">
+                          <span className="text-foreground-muted">Adherence</span>
+                          <span className="text-foreground">{client.adherence}%</span>
+                        </div>
+                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${client.adherence}%`,
+                              background:
+                                client.adherence >= 90
+                                  ? 'var(--success)'
+                                  : client.adherence >= 80
+                                  ? 'var(--primary)'
+                                  : 'var(--warning)',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Check-in day */}
+                      <div className="sm:w-20 text-left sm:text-center">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Check-in</p>
+                        <p className="mt-0.5 text-xs font-black text-foreground">{client.checkIn}</p>
+                      </div>
+
+                      {/* Quick Row Actions */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openMessageForClient(client)}
+                          className="btn-ghost !h-8 !px-2.5 !text-xs !font-bold rounded-lg border border-border hover:border-primary/40 hover:bg-primary/10 hover:text-primary transition"
+                          title={`Message ${client.name}`}
+                        >
+                          <MessageCircle className="size-3.5" />
+                          <span className="hidden md:inline">Message</span>
+                        </button>
+
+                        <button
+                          onClick={() => openClientDetail(client)}
+                          className="btn-outline !h-8 !px-2.5 !text-xs !font-bold rounded-lg hover:border-primary transition"
+                          title="View Full Profile & Notes"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </section>
 
           {/* Right Column: Priorities & Weekly Pulse */}
@@ -365,7 +383,7 @@ export function CoachPortalPage() {
             <div className="card p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-xl bg-primary-light text-primary">
+                  <span className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary">
                     <Activity className="size-5" />
                   </span>
                   <div>
@@ -376,7 +394,7 @@ export function CoachPortalPage() {
                   </div>
                 </div>
 
-                <div className="h-2 w-16 overflow-hidden rounded-full bg-background-alt">
+                <div className="h-2 w-16 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                   <div
                     className="h-full bg-primary rounded-full transition-all"
                     style={{ width: `${(completedPrioritiesCount / priorities.length) * 100}%` }}
@@ -391,15 +409,15 @@ export function CoachPortalPage() {
                     onClick={() => togglePriority(item.id)}
                     className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left transition border ${
                       item.done
-                        ? 'border-border/60 bg-background-alt/50 opacity-60'
-                        : 'border-border bg-card hover:border-primary/40 hover:bg-background-alt'
+                        ? 'border-border/60 bg-slate-100/40 dark:bg-slate-900/40 opacity-60'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-slate-50/50 dark:hover:bg-slate-800/50'
                     }`}
                   >
                     <span
                       className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-lg border transition ${
                         item.done
                           ? 'border-emerald-500 bg-emerald-500 text-white'
-                          : 'border-border bg-white text-transparent'
+                          : 'border-border bg-card text-transparent'
                       }`}
                     >
                       <Check className="size-3.5 stroke-[3]" />
@@ -433,20 +451,20 @@ export function CoachPortalPage() {
                 </div>
 
                 <div className="mt-4 flex items-baseline gap-2">
-                  <p className="text-3xl font-black tracking-tight text-white">19 / 24</p>
+                  <p className="text-3xl font-black tracking-tight text-white">{clients.length ? `${clients.length} Active` : '4 Active'}</p>
                   <p className="text-sm font-medium text-slate-400">Athletes</p>
                 </div>
                 <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                  Active athletes have logged all assigned training sessions and nutrition targets for the current cycle.
+                  Active athletes are monitored against target weights, weekly volume adherence, and nutrition consistency.
                 </p>
 
                 <div className="mt-5 rounded-2xl bg-white/10 p-3.5 backdrop-blur-xs border border-white/15">
                   <div className="flex items-center justify-between text-xs font-bold text-white mb-1.5">
                     <span>Target: 90%</span>
-                    <span>79.2% achieved</span>
+                    <span>91% achieved</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-black/20">
-                    <div className="h-full rounded-full bg-emerald-400" style={{ width: '79.2%' }} />
+                    <div className="h-full rounded-full bg-emerald-400" style={{ width: '91%' }} />
                   </div>
                 </div>
               </div>
@@ -454,16 +472,15 @@ export function CoachPortalPage() {
           </section>
         </div>
 
-        {/* Client Detail Modal */}
+        {/* Client Detail & Management Modal */}
         {selectedClient && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(10,15,30,0.6)', backdropFilter: 'blur(8px)' }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) setSelectedClient(null)
             }}
           >
-            <div className="animate-scale-in w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-2xl">
+            <div className="animate-scale-in w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-5">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="grid size-12 place-items-center rounded-2xl bg-primary text-base font-black text-white">
@@ -482,43 +499,86 @@ export function CoachPortalPage() {
                 </button>
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-3">
-                <div className="rounded-2xl bg-background-alt p-3.5 text-center">
+              {/* Client Metrics */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-3.5 text-center">
                   <p className="text-[10px] font-bold text-foreground-muted uppercase">Adherence</p>
                   <p className="text-base font-black text-primary mt-0.5">{selectedClient.adherence}%</p>
                 </div>
-                <div className="rounded-2xl bg-background-alt p-3.5 text-center">
+                <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-3.5 text-center">
                   <p className="text-[10px] font-bold text-foreground-muted uppercase">Weight</p>
                   <p className="text-base font-black text-foreground mt-0.5">{selectedClient.weight} kg</p>
                 </div>
-                <div className="rounded-2xl bg-background-alt p-3.5 text-center">
+                <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-3.5 text-center">
                   <p className="text-[10px] font-bold text-foreground-muted uppercase">Avg. Calories</p>
-                  <p className="text-base font-black text-foreground mt-0.5">{selectedClient.caloriesAvg}</p>
+                  <p className="text-base font-black text-foreground mt-0.5">{selectedClient.caloriesAvg} kcal</p>
                 </div>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-border p-4 bg-card">
-                <p className="text-xs font-bold text-foreground">Recent Activity</p>
-                <p className="text-xs text-foreground-muted mt-1">{selectedClient.lastSession}</p>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="badge badge-primary text-[10px]">Active Macro Plan</span>
-                  <span className="badge badge-success text-[10px]">Heart Rate Ready</span>
+              {/* Status Selector */}
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1.5 block">Athlete Status</label>
+                <div className="flex gap-2">
+                  {(['On track', 'Review', 'Needs attention'] as const).map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setClientStatus(st)}
+                      className={`flex-1 rounded-xl py-2 text-xs font-bold border transition ${
+                        clientStatus === st
+                          ? st === 'On track'
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : st === 'Review'
+                            ? 'bg-amber-600 text-white border-amber-600'
+                            : 'bg-rose-600 text-white border-rose-600'
+                          : 'border-border bg-slate-100/40 dark:bg-slate-800/40 text-foreground-muted'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-end gap-3">
-                <button onClick={() => setSelectedClient(null)} className="btn-outline !text-xs !h-10">
-                  Close
-                </button>
+              {/* Coach Notes */}
+              <div>
+                <label className="text-xs font-bold text-foreground mb-1.5 block">
+                  Coach Notes & Recommendations (Persistent)
+                </label>
+                <textarea
+                  rows={3}
+                  value={clientNotes}
+                  onChange={(e) => setClientNotes(e.target.value)}
+                  placeholder="Add private coach notes, technique feedback, or macro adjustments…"
+                  className="w-full rounded-2xl border border-border bg-slate-100/60 dark:bg-slate-800/50 p-3.5 text-xs font-medium text-foreground outline-none transition focus:border-primary"
+                />
+              </div>
+
+              {/* Actions Footer */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/70">
                 <button
+                  type="button"
                   onClick={() => {
                     openMessageForClient(selectedClient)
                     setSelectedClient(null)
                   }}
-                  className="btn-primary !text-xs !h-10"
+                  className="btn-outline !text-xs !h-10 inline-flex items-center gap-1.5"
                 >
-                  <MessageCircle className="size-3.5" /> Message Athlete
+                  <MessageCircle className="size-3.5" /> Message
                 </button>
+
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedClient(null)} className="btn-ghost !text-xs !h-10">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveClientDetails}
+                    disabled={savingNotes}
+                    className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-1.5"
+                  >
+                    <Save className="size-3.5" /> {savingNotes ? 'Saving…' : 'Save Changes'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -527,8 +587,7 @@ export function CoachPortalPage() {
         {/* Send Coaching Message Modal */}
         {messageModalOpen && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(10,15,30,0.6)', backdropFilter: 'blur(8px)' }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) setMessageModalOpen(false)
             }}
@@ -557,13 +616,13 @@ export function CoachPortalPage() {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Write instructions, encouragement, or workout adjustments…"
-                    className="mt-1.5 w-full rounded-2xl border border-border bg-background-alt p-3.5 text-xs font-medium text-foreground outline-none transition focus:border-primary focus:bg-white"
+                    className="mt-1.5 w-full rounded-2xl border border-border bg-slate-100/60 dark:bg-slate-800/50 p-3.5 text-xs font-medium text-foreground outline-none transition focus:border-primary"
                     required
                   />
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
-                  <span className="text-[11px] text-foreground-muted">Delivered via FitAI athlete inbox</span>
+                  <span className="text-[11px] text-foreground-muted">Delivered to athlete workspace</span>
                   <div className="flex gap-2.5">
                     <button
                       type="button"
@@ -572,7 +631,7 @@ export function CoachPortalPage() {
                     >
                       Cancel
                     </button>
-                    <button type="submit" className="btn-primary !text-xs !h-10">
+                    <button type="submit" className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-1.5">
                       <Send className="size-3.5" /> Send Message
                     </button>
                   </div>

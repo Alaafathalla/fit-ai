@@ -93,11 +93,11 @@ export function WeeklyBars({ progress }: { progress: WeeklyProgress[] }) {
 
   return (
     <div className="mt-4 flex h-28 items-end gap-1.5">
-      {progress.map((p) => {
+      {progress.map((p, i) => {
         const isToday = dayIndex(p.day) === today
         const pct = Math.max((p.caloriesBurned / max) * 100, 5)
         return (
-          <div key={p.day} className="group flex flex-1 flex-col items-center gap-1.5">
+          <div key={p.date ? `${p.date}-${p.day}` : `${p.day}-${i}`} className="group flex flex-1 flex-col items-center gap-1.5">
             <div
               className="relative w-full overflow-hidden rounded-t-lg"
               style={{ height: 88 }}
@@ -208,13 +208,13 @@ export function ActivityHeatmap({ progress }: { progress: WeeklyProgress[] }) {
   const max = Math.max(...progress.map((p) => p.steps), 1)
   return (
     <div className="flex gap-1.5">
-      {progress.map((p) => {
+      {progress.map((p, i) => {
         const intensity = Math.max(p.steps / max, 0.08)
         return (
           <div
-            key={p.day}
+            key={p.date ? `${p.date}-${p.day}` : `${p.day}-${i}`}
             className="group flex flex-1 flex-col items-center gap-1"
-            title={`${p.day}: ${p.steps.toLocaleString()} steps`}
+            title={`${p.day}${p.date ? ` (${p.date})` : ''}: ${p.steps.toLocaleString()} steps`}
           >
             <div
               className="h-9 w-full rounded-lg transition-all duration-300 group-hover:scale-105"

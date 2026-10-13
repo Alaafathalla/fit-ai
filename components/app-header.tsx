@@ -170,10 +170,11 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
   return (
     <>
       <header
-        className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center justify-between px-4 sm:px-8"
+        className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center justify-between px-4 sm:px-8 text-foreground"
         style={{
-          background: 'rgba(255, 255, 255, 0.92)',
-          borderBottom: '1px solid var(--border)',
+          background: 'var(--header)',
+          color: 'var(--foreground)',
+          borderBottom: '1px solid var(--header-border)',
           backdropFilter: 'blur(18px)',
           WebkitBackdropFilter: 'blur(18px)',
         }}
@@ -198,11 +199,11 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                 <div className="flex items-center gap-2">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-primary">{subtitle}</p>
                   {role === 'COACH' ? (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-800 border border-slate-200">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
                       Coach Workspace
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60">
                       <span className="size-1.5 rounded-full bg-emerald-500" /> Athlete Mode
                     </span>
                   )}
@@ -220,12 +221,12 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
           {/* Search Trigger */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground-muted shadow-xs transition hover:border-primary/40 hover:bg-background-alt hover:text-foreground"
+            className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-medium text-foreground-muted shadow-xs transition hover:border-primary/40 hover:bg-background-alt hover:text-foreground dark:bg-slate-800/40 dark:hover:bg-slate-800/80"
             aria-label="Search"
           >
             <Search className="size-4 text-foreground-muted" />
             <span className="hidden sm:inline">Search anything…</span>
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded-md border border-border bg-background-alt px-1.5 py-0.5 text-[10px] font-bold text-foreground-muted">
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded-md border border-border bg-background-alt px-1.5 py-0.5 text-[10px] font-bold text-foreground-muted dark:bg-slate-800">
               <Command className="size-2.5" />K
             </kbd>
           </button>
@@ -258,7 +259,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                     onClick={() => goTo('/workouts')}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-foreground transition hover:bg-background-alt"
                   >
-                    <span className="grid size-7 place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <span className="grid size-7 place-items-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
                       <Dumbbell className="size-4" />
                     </span>
                     <div>
@@ -271,7 +272,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                     onClick={() => goTo('/nutrition')}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-foreground transition hover:bg-background-alt"
                   >
-                    <span className="grid size-7 place-items-center rounded-lg bg-amber-50 text-amber-600">
+                    <span className="grid size-7 place-items-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
                       <Utensils className="size-4" />
                     </span>
                     <div>
@@ -284,7 +285,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                     onClick={() => goTo('/recovery')}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-foreground transition hover:bg-background-alt"
                   >
-                    <span className="grid size-7 place-items-center rounded-lg bg-cyan-50 text-cyan-600">
+                    <span className="grid size-7 place-items-center rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400">
                       <HeartPulse className="size-4" />
                     </span>
                     <div>
@@ -297,7 +298,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                     onClick={() => goTo('/coach')}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-foreground transition hover:bg-background-alt"
                   >
-                    <span className="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-800">
+                    <span className="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                       <Bot className="size-4" />
                     </span>
                     <div>
@@ -318,7 +319,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                 setActionsOpen(false)
                 setProfileOpen(false)
               }}
-              className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-foreground-muted transition hover:border-primary/40 hover:bg-background-alt hover:text-foreground shadow-xs"
+              className="relative grid size-9 place-items-center rounded-xl border border-border bg-card text-foreground-muted transition hover:border-primary/40 hover:bg-background-alt hover:text-foreground shadow-xs dark:bg-slate-800/40 dark:hover:bg-slate-800/80"
               aria-label="Notifications"
             >
               <Bell className="size-4" />
@@ -338,7 +339,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-foreground">Notifications</p>
                     {unreadCount > 0 && (
-                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-primary">
+                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-primary dark:bg-primary/20 dark:text-primary-light">
                         {unreadCount} new
                       </span>
                     )}
@@ -356,7 +357,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                 <div className="max-h-[380px] divide-y divide-border/60 overflow-y-auto p-1.5">
                   {notifications.length === 0 ? (
                     <div className="px-4 py-10 text-center">
-                      <div className="mx-auto grid size-10 place-items-center rounded-full bg-success-light text-success mb-2">
+                      <div className="mx-auto grid size-10 place-items-center rounded-full bg-success-light text-success dark:bg-emerald-950/50 dark:text-emerald-400 mb-2">
                         <Check className="size-5" />
                       </div>
                       <p className="text-xs font-bold text-foreground">You are all caught up!</p>
@@ -368,7 +369,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                         key={item.id}
                         onClick={() => markItemRead(item.id, item.href)}
                         className={`flex w-full items-start gap-3 rounded-xl p-3 text-left transition ${
-                          item.unread ? 'bg-primary-light/40 hover:bg-primary-light/70' : 'hover:bg-background-alt'
+                          item.unread ? 'bg-primary-light/40 hover:bg-primary-light/70 dark:bg-primary/15 dark:hover:bg-primary/25' : 'hover:bg-background-alt'
                         }`}
                       >
                         <span
@@ -413,7 +414,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                   style={{ background: 'var(--gradient-hero)' }}
                 >
                   {user.avatarInitials}
-                  <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-white bg-emerald-500" />
+                  <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500" />
                 </div>
                 <div className="hidden text-left xl:block">
                   <p className="max-w-[100px] truncate text-xs font-bold text-foreground leading-tight">{user.name}</p>
@@ -434,7 +435,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                     <p className="text-[11px] text-foreground-muted truncate">{user.email}</p>
                     <div className="mt-2 flex items-center justify-between border-t border-border/80 pt-2 text-[10px]">
                       <span className="font-semibold text-foreground-muted">Current Role</span>
-                      <span className="rounded-md bg-primary-light px-2 py-0.5 font-bold text-primary">
+                      <span className="rounded-md bg-primary-light px-2 py-0.5 font-bold text-primary dark:bg-primary/20 dark:text-primary-light">
                         {role === 'COACH' ? 'Coach' : 'Athlete'}
                       </span>
                     </div>
@@ -471,7 +472,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
 
                     <button
                       onClick={handleSignOut}
-                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-danger transition hover:bg-danger-light"
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-danger transition hover:bg-danger-light dark:hover:bg-rose-950/30"
                     >
                       <LogOut className="size-4" />
                       <span>Sign Out</span>
@@ -534,7 +535,7 @@ export function AppHeader({ title, subtitle, onMenuOpen, role, user }: AppHeader
                         className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition hover:bg-background-alt group"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary group-hover:bg-primary group-hover:text-white transition">
+                          <span className="grid size-8 place-items-center rounded-lg bg-primary-light text-primary group-hover:bg-primary group-hover:text-white dark:bg-primary/20 dark:text-primary-light transition">
                             <Icon className="size-4" />
                           </span>
                           <span className="text-xs font-bold text-foreground">{label}</span>

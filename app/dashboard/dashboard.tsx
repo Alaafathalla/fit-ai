@@ -488,8 +488,8 @@ export function DashboardPage() {
               </div>
               <ActivityHeatmap progress={isNewAccount ? progress.map((p) => ({ ...p, steps: 0 })) : progress} />
               <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-7">
-                {progress.map((p) => (
-                  <div key={p.day} className="rounded-xl p-3 text-center" style={{ background: 'var(--background-alt)' }}>
+                {progress.map((p, i) => (
+                  <div key={p.date ? `${p.date}-${p.day}` : `${p.day}-${i}`} className="rounded-xl p-3 text-center" style={{ background: 'var(--background-alt)' }}>
                     <p className="text-[10px] font-semibold" style={{ color: 'var(--foreground-muted)' }}>{p.day}</p>
                     <p className="mt-1 text-xs font-bold" style={{ color: 'var(--foreground)' }}>
                       {isNewAccount ? '0' : p.steps.toLocaleString()}

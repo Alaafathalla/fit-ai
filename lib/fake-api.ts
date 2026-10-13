@@ -80,6 +80,7 @@ export interface UserProfile {
 
 export interface WeeklyProgress {
   day: string
+  date?: string
   caloriesBurned: number
   workoutMinutes: number
   steps: number
@@ -715,6 +716,7 @@ function progressPayload(state: FakeState, days = 7): { weekly: WeeklyProgress[]
 
   const weekly = stats.map((stat) => ({
     day: DAY_LABELS[new Date(`${stat.date}T12:00:00`).getDay()],
+    date: stat.date,
     caloriesBurned: Math.round(stat.workoutMinutes * 8.5),
     workoutMinutes: stat.workoutMinutes,
     steps: stat.steps,

@@ -3,14 +3,18 @@
 import { EmptyState } from '@/components/empty-state'
 import { Shell } from '@/components/shell'
 import { CardSkeleton } from '@/components/ui/skeleton'
+import { AthleteProgramView } from '@/components/athlete-program-view'
 import {
   getCoachClients,
   updateCoachClient,
+  updateCoachClientPlanDay,
+  updateCoachClientMeal,
   type CoachClientItem,
 } from '@/lib/api'
 import {
   Activity,
   CalendarCheck2,
+  CalendarDays,
   Check,
   CheckCircle2,
   Clock3,
@@ -21,6 +25,7 @@ import {
   Send,
   TrendingUp,
   UsersRound,
+  Utensils,
   X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -39,6 +44,7 @@ export function CoachPortalPage() {
   const [filter, setFilter] = useState<'All' | 'On track' | 'Review' | 'Needs attention'>('All')
   const [search, setSearch] = useState('')
   const [selectedClient, setSelectedClient] = useState<CoachClientItem | null>(null)
+  const [clientModalTab, setClientModalTab] = useState<'program' | 'overview'>('program')
   const [clientNotes, setClientNotes] = useState('')
   const [clientStatus, setClientStatus] = useState<'On track' | 'Review' | 'Needs attention'>('On track')
   const [savingNotes, setSavingNotes] = useState(false)
@@ -103,10 +109,39 @@ export function CoachPortalPage() {
     showToast('Coaching message dispatched to athlete successfully!')
   }
 
-  const openClientDetail = (client: CoachClientItem) => {
+  const openClientDetail = (client: CoachClientItem, initialTab: 'program' | 'overview' = 'program') => {
     setSelectedClient(client)
+    setClientModalTab(initialTab)
     setClientNotes(client.notes || '')
     setClientStatus(client.status)
+  }
+
+  const handleToggleClientDay = async (dayId: string) => {
+    if (!selectedClient) return
+    try {
+      const res = await updateCoachClientPlanDay(selectedClient.id, dayId)
+      if (res.client) {
+        setSelectedClient(res.client)
+        setClients((prev) => prev.map((c) => (c.id === res.client!.id ? res.client! : c)))
+        showToast('تم تحديث حالة تمرين اللاعب بنجاح!')
+      }
+    } catch {
+      showToast('تعذر تحديث التمرين')
+    }
+  }
+
+  const handleToggleClientMeal = async (mealId: string) => {
+    if (!selectedClient) return
+    try {
+      const res = await updateCoachClientMeal(selectedClient.id, mealId)
+      if (res.client) {
+        setSelectedClient(res.client)
+        setClients((prev) => prev.map((c) => (c.id === res.client!.id ? res.client! : c)))
+        showToast('تم تحديث حالة وجبة اللاعب بنجاح!')
+      }
+    } catch {
+      showToast('تعذر تحديث الوجبة')
+    }
   }
 
   const handleSaveClientDetails = async () => {
@@ -291,87 +326,128 @@ export function CoachPortalPage() {
                     />
                   </div>
                 ) : (
-                  filteredClients.map((client) => (
-                    <div
-                      key={client.id}
-                      className="flex flex-col gap-4 p-5 transition hover:bg-slate-50/50 dark:hover:bg-slate-900/30 sm:flex-row sm:items-center sm:justify-between group"
-                    >
-                      {/* Client Info */}
-                      <div className="flex min-w-0 flex-1 items-center gap-3.5">
-                        <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-xs font-black text-primary shadow-xs">
-                          {client.initials}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="truncate text-sm font-bold text-foreground">{client.name}</p>
-                            <span
-                              className={`badge ${
-                                client.status === 'On track'
-                                  ? 'badge-success'
-                                  : client.status === 'Review'
-                                  ? 'badge-warning'
-                                  : 'badge-danger'
-                              }`}
-                            >
-                              {client.status}
-                            </span>
+                  filteredClients.map((client) => {
+                    const plan = client.weeklyPlan
+                    return (
+                      <div
+                        key={client.id}
+                        className="flex flex-col gap-4 p-5 transition hover:bg-slate-50/50 dark:hover:bg-slate-900/30 xl:flex-row xl:items-center xl:justify-between group"
+                      >
+                        {/* Client Info */}
+                        <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                          <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-xs font-black text-primary shadow-xs">
+                            {client.initials}
                           </div>
-                          <p className="truncate text-xs text-foreground-muted mt-0.5">{client.goal}</p>
-                          <p className="text-[11px] text-foreground-muted/80 mt-1 flex items-center gap-1">
-                            <Clock3 className="size-3" /> {client.lastSession}
-                          </p>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-sm font-bold text-foreground">{client.name}</p>
+                              <span
+                                className={`badge ${
+                                  client.status === 'On track'
+                                    ? 'badge-success'
+                                    : client.status === 'Review'
+                                    ? 'badge-warning'
+                                    : 'badge-danger'
+                                }`}
+                              >
+                                {client.status}
+                              </span>
+                            </div>
+                            <p className="truncate text-xs text-foreground-muted mt-0.5">{client.goal}</p>
+                            <p className="text-[11px] text-foreground-muted/80 mt-1 flex items-center gap-1">
+                              <Clock3 className="size-3" /> {client.lastSession}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Program & Completion Stats */}
+                        {plan && (
+                          <div className="min-w-[190px] rounded-2xl bg-slate-100/70 p-2.5 dark:bg-slate-800/40 border border-border/50">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className="text-foreground truncate max-w-[130px] font-extrabold">{plan.programTitle}</span>
+                              <span className="text-emerald-600 dark:text-emerald-400">{plan.completionPercentage}%</span>
+                            </div>
+                            <div className="mt-1 flex items-center justify-between text-[10px] text-foreground-muted font-semibold">
+                              <span>أتمّ {plan.completedWorkoutsCount} من {plan.totalWorkoutsCount}</span>
+                              <span className="text-blue-600 dark:text-blue-400">متبقي {plan.remainingWorkoutsCount}</span>
+                            </div>
+                            {/* 7-day mini split dots */}
+                            <div className="mt-2 flex items-center gap-1">
+                              {plan.splitDays.map((d) => (
+                                <span
+                                  key={d.id}
+                                  title={`${d.dayShort}: ${d.title} (${d.status === 'completed' ? 'تم الإنجاز' : d.status === 'remaining' ? 'متبقي' : 'يوم راحة'})`}
+                                  className={`h-2 flex-1 rounded-full transition ${
+                                    d.status === 'completed'
+                                      ? 'bg-emerald-500'
+                                      : d.status === 'remaining'
+                                      ? 'bg-blue-500'
+                                      : 'bg-slate-300 dark:bg-slate-700'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Adherence Bar */}
+                        <div className="sm:w-28">
+                          <div className="flex items-center justify-between text-[11px] font-bold">
+                            <span className="text-foreground-muted">Adherence</span>
+                            <span className="text-foreground">{client.adherence}%</span>
+                          </div>
+                          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${client.adherence}%`,
+                                background:
+                                  client.adherence >= 90
+                                    ? 'var(--success)'
+                                    : client.adherence >= 80
+                                    ? 'var(--primary)'
+                                    : 'var(--warning)',
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Check-in day */}
+                        <div className="sm:w-16 text-left sm:text-center">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Check-in</p>
+                          <p className="mt-0.5 text-xs font-black text-foreground">{client.checkIn}</p>
+                        </div>
+
+                        {/* Quick Row Actions */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => openClientDetail(client, 'program')}
+                            className="btn btn-primary !h-8 !px-3 !text-xs !font-bold inline-flex items-center gap-1.5 shadow-xs"
+                            title="عرض وتعديل البرنامج والمخطط والوجبات"
+                          >
+                            <CalendarDays className="size-3.5" />
+                            <span>البرنامج والوجبات</span>
+                          </button>
+
+                          <button
+                            onClick={() => openMessageForClient(client)}
+                            className="btn-ghost !h-8 !px-2.5 !text-xs !font-bold rounded-lg border border-border hover:border-primary/40 hover:bg-primary/10 hover:text-primary transition"
+                            title={`Message ${client.name}`}
+                          >
+                            <MessageCircle className="size-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => openClientDetail(client, 'overview')}
+                            className="btn-outline !h-8 !px-2.5 !text-xs !font-bold rounded-lg hover:border-primary transition"
+                            title="إدارة الملاحظات والحالة"
+                          >
+                            Manage
+                          </button>
                         </div>
                       </div>
-
-                      {/* Adherence Bar */}
-                      <div className="sm:w-36">
-                        <div className="flex items-center justify-between text-[11px] font-bold">
-                          <span className="text-foreground-muted">Adherence</span>
-                          <span className="text-foreground">{client.adherence}%</span>
-                        </div>
-                        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${client.adherence}%`,
-                              background:
-                                client.adherence >= 90
-                                  ? 'var(--success)'
-                                  : client.adherence >= 80
-                                  ? 'var(--primary)'
-                                  : 'var(--warning)',
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Check-in day */}
-                      <div className="sm:w-20 text-left sm:text-center">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Check-in</p>
-                        <p className="mt-0.5 text-xs font-black text-foreground">{client.checkIn}</p>
-                      </div>
-
-                      {/* Quick Row Actions */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openMessageForClient(client)}
-                          className="btn-ghost !h-8 !px-2.5 !text-xs !font-bold rounded-lg border border-border hover:border-primary/40 hover:bg-primary/10 hover:text-primary transition"
-                          title={`Message ${client.name}`}
-                        >
-                          <MessageCircle className="size-3.5" />
-                          <span className="hidden md:inline">Message</span>
-                        </button>
-
-                        <button
-                          onClick={() => openClientDetail(client)}
-                          className="btn-outline !h-8 !px-2.5 !text-xs !font-bold rounded-lg hover:border-primary transition"
-                          title="View Full Profile & Notes"
-                        >
-                          Manage
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    )
+                  })
                 )}
               </div>
             )}
@@ -475,111 +551,178 @@ export function CoachPortalPage() {
         {/* Client Detail & Management Modal */}
         {selectedClient && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) setSelectedClient(null)
             }}
           >
-            <div className="animate-scale-in w-full max-w-xl overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-5">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-12 place-items-center rounded-2xl bg-primary text-base font-black text-white">
+            <div className="animate-scale-in w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-6">
+              {/* Modal Top Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/70 pb-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="grid size-12 place-items-center rounded-2xl bg-primary text-base font-black text-white shadow-xs">
                     {selectedClient.initials}
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-foreground">{selectedClient.name}</h3>
-                    <p className="text-xs text-foreground-muted">{selectedClient.goal}</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-black text-foreground">{selectedClient.name}</h3>
+                      <span
+                        className={`badge ${
+                          selectedClient.status === 'On track'
+                            ? 'badge-success'
+                            : selectedClient.status === 'Review'
+                            ? 'badge-warning'
+                            : 'badge-danger'
+                        }`}
+                      >
+                        {selectedClient.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-foreground-muted mt-0.5">{selectedClient.goal} · {selectedClient.email}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setSelectedClient(null)}
-                  className="btn-ghost !p-1.5 text-foreground-muted hover:text-foreground"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
 
-              {/* Client Metrics */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-3.5 text-center">
-                  <p className="text-[10px] font-bold text-foreground-muted uppercase">Adherence</p>
-                  <p className="text-base font-black text-primary mt-0.5">{selectedClient.adherence}%</p>
-                </div>
-                <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-3.5 text-center">
-                  <p className="text-[10px] font-bold text-foreground-muted uppercase">Weight</p>
-                  <p className="text-base font-black text-foreground mt-0.5">{selectedClient.weight} kg</p>
-                </div>
-                <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-3.5 text-center">
-                  <p className="text-[10px] font-bold text-foreground-muted uppercase">Avg. Calories</p>
-                  <p className="text-base font-black text-foreground mt-0.5">{selectedClient.caloriesAvg} kcal</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openMessageForClient(selectedClient)
+                      setSelectedClient(null)
+                    }}
+                    className="btn-outline !text-xs !h-9 inline-flex items-center gap-1.5"
+                  >
+                    <MessageCircle className="size-3.5" /> رسالة للاعب
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedClient(null)}
+                    className="btn-ghost !p-2 text-foreground-muted hover:text-foreground rounded-xl"
+                  >
+                    <X className="size-5" />
+                  </button>
                 </div>
               </div>
 
-              {/* Status Selector */}
-              <div>
-                <label className="text-xs font-bold text-foreground mb-1.5 block">Athlete Status</label>
-                <div className="flex gap-2">
-                  {(['On track', 'Review', 'Needs attention'] as const).map((st) => (
-                    <button
-                      key={st}
-                      type="button"
-                      onClick={() => setClientStatus(st)}
-                      className={`flex-1 rounded-xl py-2 text-xs font-bold border transition ${
-                        clientStatus === st
-                          ? st === 'On track'
-                            ? 'bg-emerald-600 text-white border-emerald-600'
-                            : st === 'Review'
-                            ? 'bg-amber-600 text-white border-amber-600'
-                            : 'bg-rose-600 text-white border-rose-600'
-                          : 'border-border bg-slate-100/40 dark:bg-slate-800/40 text-foreground-muted'
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Coach Notes */}
-              <div>
-                <label className="text-xs font-bold text-foreground mb-1.5 block">
-                  Coach Notes & Recommendations (Persistent)
-                </label>
-                <textarea
-                  rows={3}
-                  value={clientNotes}
-                  onChange={(e) => setClientNotes(e.target.value)}
-                  placeholder="Add private coach notes, technique feedback, or macro adjustments…"
-                  className="w-full rounded-2xl border border-border bg-slate-100/60 dark:bg-slate-800/50 p-3.5 text-xs font-medium text-foreground outline-none transition focus:border-primary"
-                />
-              </div>
-
-              {/* Actions Footer */}
-              <div className="flex items-center justify-between pt-2 border-t border-border/70">
+              {/* Modal Navigation Tabs */}
+              <div className="flex gap-2 border-b border-border/60 pb-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    openMessageForClient(selectedClient)
-                    setSelectedClient(null)
-                  }}
-                  className="btn-outline !text-xs !h-10 inline-flex items-center gap-1.5"
+                  onClick={() => setClientModalTab('program')}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+                    clientModalTab === 'program'
+                      ? 'bg-primary text-white shadow-xs'
+                      : 'bg-slate-100 text-foreground-muted hover:text-foreground dark:bg-slate-800'
+                  }`}
                 >
-                  <MessageCircle className="size-3.5" /> Message
+                  <CalendarDays className="size-3.5" />
+                  برنامج المتدرب والمخطط والوجبات
+                  {selectedClient.weeklyPlan && (
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px]">
+                      {selectedClient.weeklyPlan.completedWorkoutsCount}/{selectedClient.weeklyPlan.totalWorkoutsCount} أتمّ
+                    </span>
+                  )}
                 </button>
 
-                <div className="flex gap-2">
-                  <button onClick={() => setSelectedClient(null)} className="btn-ghost !text-xs !h-10">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveClientDetails}
-                    disabled={savingNotes}
-                    className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-1.5"
-                  >
-                    <Save className="size-3.5" /> {savingNotes ? 'Saving…' : 'Save Changes'}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setClientModalTab('overview')}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
+                    clientModalTab === 'overview'
+                      ? 'bg-primary text-white shadow-xs'
+                      : 'bg-slate-100 text-foreground-muted hover:text-foreground dark:bg-slate-800'
+                  }`}
+                >
+                  <Activity className="size-3.5" />
+                  بيانات المتدرب وملاحظات الكوتش
+                </button>
               </div>
+
+              {/* Tab 1: Weekly Program, Split & Meals */}
+              {clientModalTab === 'program' && selectedClient.weeklyPlan && (
+                <div className="space-y-4">
+                  <AthleteProgramView
+                    plan={selectedClient.weeklyPlan}
+                    athleteName={selectedClient.name}
+                    isCoachView={true}
+                    onToggleDay={handleToggleClientDay}
+                    onToggleMeal={handleToggleClientMeal}
+                  />
+                </div>
+              )}
+
+              {/* Tab 2: Client Metrics & Private Notes */}
+              {clientModalTab === 'overview' && (
+                <div className="space-y-5 animate-fade-up">
+                  {/* Client Metrics */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-4 text-center border border-border/40">
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">نسبة الالتزام</p>
+                      <p className="text-xl font-black text-primary mt-1">{selectedClient.adherence}%</p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-4 text-center border border-border/40">
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">الوزن الحالي</p>
+                      <p className="text-xl font-black text-foreground mt-1">{selectedClient.weight} kg</p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-4 text-center border border-border/40">
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">متوسط السعرات</p>
+                      <p className="text-xl font-black text-foreground mt-1">{selectedClient.caloriesAvg} kcal</p>
+                    </div>
+                  </div>
+
+                  {/* Status Selector */}
+                  <div>
+                    <label className="text-xs font-bold text-foreground mb-1.5 block">حالة المتدرب</label>
+                    <div className="flex gap-2">
+                      {(['On track', 'Review', 'Needs attention'] as const).map((st) => (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => setClientStatus(st)}
+                          className={`flex-1 rounded-xl py-2 text-xs font-bold border transition ${
+                            clientStatus === st
+                              ? st === 'On track'
+                                ? 'bg-emerald-600 text-white border-emerald-600'
+                                : st === 'Review'
+                                ? 'bg-amber-600 text-white border-amber-600'
+                                : 'bg-rose-600 text-white border-rose-600'
+                              : 'border-border bg-slate-100/40 dark:bg-slate-800/40 text-foreground-muted'
+                          }`}
+                        >
+                          {st === 'On track' ? 'ملتزم (On track)' : st === 'Review' ? 'تحت المراجعة (Review)' : 'يحتاج اهتمام (Needs attention)'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Coach Notes */}
+                  <div>
+                    <label className="text-xs font-bold text-foreground mb-1.5 block">
+                      ملاحظات وتوجيهات الكوتش الخاصة بالمتدرب (مستمرة ومحفوظة)
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={clientNotes}
+                      onChange={(e) => setClientNotes(e.target.value)}
+                      placeholder="أضف ملاحظات خاصة حول تكنيك التمارين، تعديلات الوجبات والسعرات، وتوجيهات الأسبوع القادم…"
+                      className="w-full rounded-2xl border border-border bg-slate-100/60 dark:bg-slate-800/50 p-3.5 text-xs font-medium text-foreground outline-none transition focus:border-primary"
+                    />
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/70">
+                    <button onClick={() => setSelectedClient(null)} className="btn-ghost !text-xs !h-10">
+                      إغلاق
+                    </button>
+                    <button
+                      onClick={handleSaveClientDetails}
+                      disabled={savingNotes}
+                      className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-1.5"
+                    >
+                      <Save className="size-3.5" /> {savingNotes ? 'جارٍ الحفظ…' : 'حفظ الملاحظات والحالة'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -2,13 +2,18 @@
 
 import { Shell } from '@/components/shell'
 import { CardSkeleton, ChartSkeleton } from '@/components/ui/skeleton'
+import { AthleteProgramView } from '@/components/athlete-program-view'
 import {
   generateAndSaveFitnessPlan,
   getCustomFitnessPlan,
   getMeals,
   getUserProfile,
+  getUserWeeklyPlan,
+  toggleUserPlanDay,
+  toggleUserPlanMeal,
   getWorkouts,
   type CustomFitnessPlan,
+  type AthleteWeeklyPlan,
   type Meal,
   type UserProfile,
   type Workout,
@@ -17,6 +22,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  Dumbbell,
   HeartPulse,
   RefreshCw,
   Sparkles,
@@ -53,7 +59,8 @@ export function PlannerPage() {
   const [meals, setMeals] = useState<Meal[]>([])
   const [user, setUser] = useState<UserProfile | null>(null)
   const [aiPlan, setAiPlan] = useState<CustomFitnessPlan | null>(null)
-  const [activeTab, setActiveTab] = useState<'ai-plan' | 'calendar'>('ai-plan')
+  const [weeklyPlan, setWeeklyPlan] = useState<AthleteWeeklyPlan | null>(null)
+  const [activeTab, setActiveTab] = useState<'my-program' | 'ai-plan' | 'calendar'>('my-program')
   const [variant, setVariant] = useState(0)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -62,16 +69,18 @@ export function PlannerPage() {
 
   const loadData = async () => {
     try {
-      const [w, m, u, p] = await Promise.all([
+      const [w, m, u, p, wp] = await Promise.all([
         getWorkouts(),
         getMeals(),
         getUserProfile(),
         getCustomFitnessPlan(),
+        getUserWeeklyPlan(),
       ])
       setWorkouts(w)
       setMeals(m)
       setUser(u)
       setAiPlan(p)
+      setWeeklyPlan(wp)
     } catch {
       setError('Could not build your weekly plan.')
     } finally {
@@ -83,6 +92,40 @@ export function PlannerPage() {
     loadData()
   }, [])
 
+  const handleToggleUserDay = async (dayId: string) => {
+    try {
+      const updated = await toggleUserPlanDay(dayId)
+      setWeeklyPlan(updated)
+      const targetDay = updated.splitDays.find((d) => d.id === dayId)
+      setToastMsg(
+        targetDay?.status === 'completed'
+          ? 'عاش! تم إنجاز التمرين وتحديث المتبقي بنجاح ✓'
+          : 'تم تعديل حالة التمرين إلى متبقي'
+      )
+      setTimeout(() => setToastMsg(''), 3000)
+    } catch {
+      setToastMsg('تعذر حفظ حالة التمرين.')
+      setTimeout(() => setToastMsg(''), 2500)
+    }
+  }
+
+  const handleToggleUserMeal = async (mealId: string) => {
+    try {
+      const updated = await toggleUserPlanMeal(mealId)
+      setWeeklyPlan(updated)
+      const targetMeal = updated.meals.find((m) => m.id === mealId)
+      setToastMsg(
+        targetMeal?.status === 'completed'
+          ? 'صحة وهنا! تم تسجيل تناول الوجبة بنجاح ✓'
+          : 'تم تعديل حالة الوجبة إلى متبقية'
+      )
+      setTimeout(() => setToastMsg(''), 3000)
+    } catch {
+      setToastMsg('تعذر حفظ حالة الوجبة.')
+      setTimeout(() => setToastMsg(''), 2500)
+    }
+  }
+
   const handleRegenerateAiPlan = async () => {
     setGenerating(true)
     try {
@@ -92,7 +135,9 @@ export function PlannerPage() {
         currentWeight: user?.currentWeight,
         targetWeight: user?.targetWeight,
       })
+      const newWeeklyPlan = await getUserWeeklyPlan()
       setAiPlan(newPlan)
+      setWeeklyPlan(newWeeklyPlan)
       setToastMsg('AI Plan generated & customized to your goal!')
       setTimeout(() => setToastMsg(''), 3500)
     } catch {
@@ -165,28 +210,47 @@ export function PlannerPage() {
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex gap-2 border-b border-border pb-3">
+        <div className="flex gap-2 border-b border-border pb-3 overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setActiveTab('my-program')}
+            className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap ${
+              activeTab === 'my-program'
+                ? 'bg-primary text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-800 text-foreground-muted hover:text-foreground'
+            }`}
+          >
+            <CalendarDays className="size-3.5" />
+            برنامجي الأسبوعي ومتابعة الإنجاز والوجبات
+            {weeklyPlan && (
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px]">
+                {weeklyPlan.completedWorkoutsCount}/{weeklyPlan.totalWorkoutsCount} أتممت
+              </span>
+            )}
+          </button>
+
           <button
             type="button"
             onClick={() => setActiveTab('ai-plan')}
-            className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+            className={`rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap ${
               activeTab === 'ai-plan'
                 ? 'bg-primary text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-slate-800 text-foreground-muted hover:text-foreground'
             }`}
           >
-            AI Training & Nutrition Protocol
+            تفاصيل البروتوكول والتمارين (AI Protocol)
           </button>
+
           <button
             type="button"
             onClick={() => setActiveTab('calendar')}
-            className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+            className={`rounded-xl px-4 py-2 text-xs font-bold transition whitespace-nowrap ${
               activeTab === 'calendar'
                 ? 'bg-primary text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-slate-800 text-foreground-muted hover:text-foreground'
             }`}
           >
-            Weekly Schedule Matrix
+            الجدول والتقويم الأسبوعي (Weekly Matrix)
           </button>
         </div>
 
@@ -201,6 +265,16 @@ export function PlannerPage() {
           </div>
         ) : error ? (
           <div className="card p-8 text-center text-sm text-danger">{error}</div>
+        ) : activeTab === 'my-program' && weeklyPlan ? (
+          <div className="animate-fade-up space-y-6">
+            <AthleteProgramView
+              plan={weeklyPlan}
+              athleteName={user?.name}
+              isCoachView={false}
+              onToggleDay={handleToggleUserDay}
+              onToggleMeal={handleToggleUserMeal}
+            />
+          </div>
         ) : activeTab === 'ai-plan' && aiPlan ? (
           <div className="space-y-7 animate-fade-up">
             {/* Plan Header Card */}

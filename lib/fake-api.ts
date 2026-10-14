@@ -110,6 +110,26 @@ export interface ActivityItem {
   calories?: number
   duration?: number
   image?: string | null
+  targetId?: string
+  workoutDetails?: {
+    id: string
+    type: WorkoutType
+    level: DifficultyLevel
+    exercises: number
+    sets: number
+    description: string
+    tags: string[]
+    rating?: number
+  }
+  mealDetails?: {
+    id: string
+    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'
+    protein: number
+    carbs: number
+    fat: number
+    prepTime: number
+    tags: string[]
+  }
 }
 
 type InternalUser = UserProfile & { calorieGoal: number }
@@ -874,6 +894,19 @@ export async function getActivity(limit = 30): Promise<ActivityItem[]> {
       calories: workout?.calories,
       duration: session.duration,
       image: workout?.image ?? null,
+      targetId: workout?.id ?? session.workoutId,
+      workoutDetails: workout
+        ? {
+            id: workout.id,
+            type: workout.type,
+            level: workout.level,
+            exercises: workout.exercises,
+            sets: workout.sets,
+            description: workout.description,
+            tags: workout.tags,
+            rating: workout.rating,
+          }
+        : undefined,
     }
   })
 
@@ -887,6 +920,18 @@ export async function getActivity(limit = 30): Promise<ActivityItem[]> {
       timestamp: log.loggedAt,
       calories: meal?.calories,
       image: meal?.image ?? null,
+      targetId: meal?.id ?? log.mealId,
+      mealDetails: meal
+        ? {
+            id: meal.id,
+            mealType: meal.mealType,
+            protein: meal.protein,
+            carbs: meal.carbs,
+            fat: meal.fat,
+            prepTime: meal.prepTime,
+            tags: meal.tags,
+          }
+        : undefined,
     }
   })
 
@@ -961,7 +1006,16 @@ export async function generateAndSaveFitnessPlan(input?: {
   return newPlan
 }
 
-// ── Coach Portal Management ───────────────────────────────────────────────────
+// ── Coach Portal & Athlete Weekly Plan Management ──────────────────────────────
+
+export * from './athlete-plan'
+import {
+  type AthleteWeeklyPlan,
+  SEED_CLIENT_PLANS,
+  createDefaultUserPlan,
+  toggleSplitDayStatus,
+  toggleMealStatus,
+} from './athlete-plan'
 
 export interface CoachClientItem {
   id: string
@@ -976,9 +1030,10 @@ export interface CoachClientItem {
   caloriesAvg: number
   lastSession: string
   notes?: string
+  weeklyPlan: AthleteWeeklyPlan
 }
 
-const COACH_CLIENTS_KEY = 'fitai-coach-clients-v1'
+const COACH_CLIENTS_KEY = 'fitai-coach-clients-v2'
 
 const DEFAULT_COACH_CLIENTS: CoachClientItem[] = [
   {
@@ -994,6 +1049,7 @@ const DEFAULT_COACH_CLIENTS: CoachClientItem[] = [
     caloriesAvg: 2150,
     lastSession: 'Upper Body Hypertrophy (45m ago)',
     notes: 'Squat depth has improved cleanly. Keep maintaining 150g protein daily.',
+    weeklyPlan: SEED_CLIENT_PLANS.c1,
   },
   {
     id: 'c2',
@@ -1008,6 +1064,7 @@ const DEFAULT_COACH_CLIENTS: CoachClientItem[] = [
     caloriesAvg: 1980,
     lastSession: 'Zone 2 Cardio & Core (Yesterday)',
     notes: 'Reduce evening snack calories by 150 kcal. Focus on hydration recovery.',
+    weeklyPlan: SEED_CLIENT_PLANS.c2,
   },
   {
     id: 'c3',
@@ -1022,6 +1079,7 @@ const DEFAULT_COACH_CLIENTS: CoachClientItem[] = [
     caloriesAvg: 2300,
     lastSession: 'Tempo Intervals (Today)',
     notes: 'Taper week ahead of Saturday race. Ensure glycogen loading Friday evening.',
+    weeklyPlan: SEED_CLIENT_PLANS.c3,
   },
   {
     id: 'c4',
@@ -1036,6 +1094,7 @@ const DEFAULT_COACH_CLIENTS: CoachClientItem[] = [
     caloriesAvg: 2100,
     lastSession: 'Deep Hip Mobility (3 days ago)',
     notes: 'Reported lower back stiffness after heavy deadlifts. Form check video requested.',
+    weeklyPlan: SEED_CLIENT_PLANS.c4,
   },
 ]
 
@@ -1080,3 +1139,105 @@ export async function updateCoachClient(data: {
   }
   return { ok: true, client: updated }
 }
+
+export async function updateCoachClientPlanDay(
+  athleteId: string,
+  dayId: string
+): Promise<{ ok: boolean; client?: CoachClientItem }> {
+  await fakeDelay()
+  let clients = await getCoachClients()
+  let updated: CoachClientItem | undefined
+  clients = clients.map((c) => {
+    if (c.id === athleteId) {
+      const updatedPlan = toggleSplitDayStatus(c.weeklyPlan, dayId)
+      updated = {
+        ...c,
+        weeklyPlan: updatedPlan,
+      }
+      return updated
+    }
+    return c
+  })
+  memoryClientsCache = clients
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(COACH_CLIENTS_KEY, JSON.stringify(clients))
+  }
+  return { ok: true, client: updated }
+}
+
+export async function updateCoachClientMeal(
+  athleteId: string,
+  mealId: string
+): Promise<{ ok: boolean; client?: CoachClientItem }> {
+  await fakeDelay()
+  let clients = await getCoachClients()
+  let updated: CoachClientItem | undefined
+  clients = clients.map((c) => {
+    if (c.id === athleteId) {
+      const updatedPlan = toggleMealStatus(c.weeklyPlan, mealId)
+      updated = {
+        ...c,
+        weeklyPlan: updatedPlan,
+      }
+      return updated
+    }
+    return c
+  })
+  memoryClientsCache = clients
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(COACH_CLIENTS_KEY, JSON.stringify(clients))
+  }
+  return { ok: true, client: updated }
+}
+
+// ── User's Weekly Plan & Completion Tracker ───────────────────────────────────
+
+const USER_WEEKLY_PLAN_KEY = 'fitai-user-weekly-plan-v2'
+
+export async function getUserWeeklyPlan(): Promise<AthleteWeeklyPlan> {
+  await fakeDelay()
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = window.localStorage.getItem(USER_WEEKLY_PLAN_KEY)
+      if (stored) return JSON.parse(stored) as AthleteWeeklyPlan
+    } catch {
+      // ignore
+    }
+  }
+
+  const state = getState()
+  const defaultPlan = createDefaultUserPlan({
+    name: state.user.name,
+    goal: state.user.goal,
+    currentWeight: state.user.currentWeight,
+    targetWeight: state.user.targetWeight,
+  })
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(USER_WEEKLY_PLAN_KEY, JSON.stringify(defaultPlan))
+  }
+  return defaultPlan
+}
+
+export async function toggleUserPlanDay(dayId: string): Promise<AthleteWeeklyPlan> {
+  await fakeDelay()
+  const currentPlan = await getUserWeeklyPlan()
+  const updatedPlan = toggleSplitDayStatus(currentPlan, dayId)
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(USER_WEEKLY_PLAN_KEY, JSON.stringify(updatedPlan))
+  }
+  return updatedPlan
+}
+
+export async function toggleUserPlanMeal(mealId: string): Promise<AthleteWeeklyPlan> {
+  await fakeDelay()
+  const currentPlan = await getUserWeeklyPlan()
+  const updatedPlan = toggleMealStatus(currentPlan, mealId)
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(USER_WEEKLY_PLAN_KEY, JSON.stringify(updatedPlan))
+  }
+  return updatedPlan
+}
+

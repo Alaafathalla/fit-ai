@@ -21,6 +21,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('role')?.toLowerCase() === 'coach') setRole('COACH')
+    if (params.get('role')?.toLowerCase() === 'user') setRole('USER')
+
     const current = getCurrentAuthUser()
     if (current) router.replace(getRoleHome(current.role))
   }, [router])
@@ -123,7 +127,17 @@ export default function RegisterPage() {
 
         <label className="flex items-start gap-2.5 text-xs leading-5 text-foreground-muted">
           <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} className="mt-0.5 size-4 rounded border-border accent-primary" />
-          <span>I agree to the Terms of Service and acknowledge the Privacy Policy.</span>
+          <span>
+            I agree to the{' '}
+            <Link href="/terms" className="font-bold text-primary hover:underline">
+              Terms of Service
+            </Link>{' '}
+            and acknowledge the{' '}
+            <Link href="/privacy" className="font-bold text-primary hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </span>
         </label>
 
         <button type="submit" disabled={loading} className="btn-primary h-12 w-full">

@@ -247,6 +247,17 @@ export function SettingsPage() {
           ))}
         </section>
 
+        {/* Support */}
+        <section className="animate-fade-up card space-y-3 p-6" style={{ animationDelay: '160ms' }}>
+          <h3 className="font-bold" style={{ color: 'var(--foreground)' }}>Support & legal</h3>
+          <div className="grid gap-2 text-sm font-semibold">
+            <Link href="/help" className="rounded-xl px-3 py-2 hover:bg-background-alt">Help Center</Link>
+            <Link href="/contact" className="rounded-xl px-3 py-2 hover:bg-background-alt">Contact</Link>
+            <Link href="/privacy" className="rounded-xl px-3 py-2 hover:bg-background-alt">Privacy Policy</Link>
+            <Link href="/terms" className="rounded-xl px-3 py-2 hover:bg-background-alt">Terms of Service</Link>
+          </div>
+        </section>
+
         {/* Plan */}
         <section className="animate-fade-up card space-y-4 p-6" style={{ animationDelay: '180ms' }}>
           <h3 className="font-bold" style={{ color: 'var(--foreground)' }}>Your plan</h3>

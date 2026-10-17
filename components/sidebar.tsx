@@ -6,17 +6,19 @@ import type { UserProfile } from '@/lib/api'
 import type React from 'react'
 import {
   Activity,
+  Award,
   Bot,
   CalendarDays,
   ChevronRight,
+  CircleHelp,
   Dumbbell,
+  FileBarChart,
   HeartPulse,
   LayoutDashboard,
   LogOut,
   RefreshCw,
   Settings,
   TrendingUp,
-  UserCheck,
   UsersRound,
   Utensils,
   X,
@@ -57,6 +59,8 @@ export const USER_NAV_GROUPS: NavGroup[] = [
     label: 'Analytics & Support',
     items: [
       { label: 'Progress', href: '/progress', icon: TrendingUp, keywords: 'charts weight metrics performance' },
+      { label: 'Reports', href: '/reports', icon: FileBarChart, keywords: 'weekly report export analytics summary' },
+      { label: 'Achievements', href: '/achievements', icon: Award, keywords: 'badges streak milestones awards' },
       { label: 'Activity', href: '/activity', icon: Activity, keywords: 'history timeline sessions meals' },
       { label: 'Coach Assistant', href: '/coach', icon: Bot, keywords: 'assistant advice coach support' },
     ],
@@ -83,6 +87,8 @@ export const COACH_NAV_GROUPS: NavGroup[] = [
     label: 'Analytics & Support',
     items: [
       { label: 'Progress', href: '/progress', icon: TrendingUp, keywords: 'charts weight metrics performance' },
+      { label: 'Reports', href: '/reports', icon: FileBarChart, keywords: 'weekly report export analytics summary' },
+      { label: 'Achievements', href: '/achievements', icon: Award, keywords: 'badges streak milestones awards' },
       { label: 'Activity', href: '/activity', icon: Activity, keywords: 'history timeline sessions meals' },
       { label: 'Coaching Assistant', href: '/coach', icon: Bot, keywords: 'assistant advice coach support' },
     ],
@@ -202,6 +208,23 @@ export function Sidebar({ user, onClose }: SidebarProps) {
 
       {/* Footer / Account section */}
       <div className="px-3.5 pb-5 pt-3 border-t border-border/80">
+        <Link
+          href="/help"
+          onClick={onClose}
+          className={`sidebar-nav-item ${pathname === '/help' ? 'active' : ''}`}
+        >
+          <span
+            className="grid size-7 shrink-0 place-items-center rounded-lg transition"
+            style={{
+              background: pathname === '/help' ? 'var(--primary)' : 'var(--background-alt)',
+              color: pathname === '/help' ? '#fff' : 'var(--foreground-muted)',
+            }}
+          >
+            <CircleHelp className="size-3.5" />
+          </span>
+          <span className="text-xs font-bold">Help Center</span>
+        </Link>
+
         <Link
           href="/settings"
           onClick={onClose}

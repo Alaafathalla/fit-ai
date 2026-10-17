@@ -83,7 +83,15 @@ export function AuthShell({ eyebrow, title, description, children, footer }: Aut
           {footer && <div className="animate-fade-up mt-5 text-center text-sm text-foreground-muted" style={{ animationDelay: '120ms' }}>{footer}</div>}
 
           <p className="mt-7 text-center text-[11px] leading-5 text-foreground-muted/75">
-            By continuing, you agree to FitAI's Terms of Service and Privacy Policy.
+            By continuing, you agree to FitAI’s{' '}
+            <Link href="/terms" className="font-bold text-foreground hover:underline">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="font-bold text-foreground hover:underline">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </div>
       </section>

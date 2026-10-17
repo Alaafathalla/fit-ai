@@ -12,9 +12,14 @@ export default function NotFound() {
         <p className="mt-3 text-sm leading-6" style={{ color: 'var(--foreground-muted)' }}>
           The page may have moved, or the link is no longer available.
         </p>
-        <Link href="/dashboard" className="btn-primary mt-6 gap-2">
-          <ArrowLeft className="size-4" /> Back to dashboard
-        </Link>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/" className="btn-primary gap-2">
+            <ArrowLeft className="size-4" /> Home
+          </Link>
+          <Link href="/help" className="btn-outline">
+            Help Center
+          </Link>
+        </div>
       </div>
     </main>
   )

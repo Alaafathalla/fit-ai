@@ -19,9 +19,6 @@ export interface CoachContext {
   recentWorkouts?: string[]
 }
 
-/**
- * Attempts to call Google Gemini API if a key is available in environment or localStorage.
- */
 async function callGeminiApi(prompt: string, context: CoachContext, apiKey: string): Promise<string> {
   const systemPrompt = `You are FitAI Coach, an elite Olympic-tier strength & conditioning coach and sports nutritionist.
 The athlete you are coaching has the following telemetry:

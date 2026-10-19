@@ -13,29 +13,29 @@ export function WeeklyPlanWidget({ weeklyPlan, onToggleDay }: WeeklyPlanWidgetPr
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-border/60 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="badge badge-primary">{weeklyPlan.level} · {weeklyPlan.daysPerWeek} أيام أسبوعياً</span>
-            <span className="text-xs font-black uppercase tracking-wider text-primary">البرنامج الرياضي النشط</span>
+            <span className="badge badge-primary">{weeklyPlan.level} · {weeklyPlan.daysPerWeek} Days/Week</span>
+            <span className="text-xs font-black uppercase tracking-wider text-primary">Active Training Program</span>
           </div>
           <h3 className="mt-1 text-xl sm:text-2xl font-black text-foreground">
             {weeklyPlan.programTitle}
           </h3>
           <p className="mt-0.5 text-xs text-foreground-muted">
-            الهدف: <strong className="text-foreground">{weeklyPlan.goal}</strong> · السعرات المستهدفة: <strong className="text-primary">{weeklyPlan.targetCalories} kcal</strong>
+            Goal: <strong className="text-foreground">{weeklyPlan.goal}</strong> · Target Calories: <strong className="text-primary">{weeklyPlan.targetCalories} kcal</strong>
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 p-3 border border-emerald-200/60 dark:border-emerald-800/60 text-center min-w-[120px]">
-            <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">أنجزت (Completed)</p>
+            <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">Completed</p>
             <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
               {weeklyPlan.completedWorkoutsCount} <span className="text-xs font-semibold text-foreground-muted">/ {weeklyPlan.totalWorkoutsCount}</span>
             </p>
           </div>
 
           <div className="rounded-2xl bg-blue-50 dark:bg-blue-950/50 p-3 border border-blue-200/60 dark:border-blue-800/60 text-center min-w-[120px]">
-            <p className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">متبقي (Remaining)</p>
+            <p className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase">Remaining</p>
             <p className="text-lg font-black text-blue-600 dark:text-blue-400 mt-0.5">
-              {weeklyPlan.remainingWorkoutsCount} <span className="text-xs font-semibold text-foreground-muted">تمارين</span>
+              {weeklyPlan.remainingWorkoutsCount} <span className="text-xs font-semibold text-foreground-muted">workouts</span>
             </p>
           </div>
 
@@ -44,7 +44,7 @@ export function WeeklyPlanWidget({ weeklyPlan, onToggleDay }: WeeklyPlanWidgetPr
             className="btn btn-primary !h-11 !px-4 !text-xs font-bold inline-flex items-center gap-1.5"
           >
             <CalendarDays className="size-4" />
-            عرض البرنامج والوجبات بالكامل →
+            View Full Program & Meals →
           </Link>
         </div>
       </div>
@@ -52,9 +52,9 @@ export function WeeklyPlanWidget({ weeklyPlan, onToggleDay }: WeeklyPlanWidgetPr
       {/* 7-Day Weekly Split Strip */}
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between text-xs font-bold text-foreground">
-          <span>المخطط الزمني للأسبوع (Weekly Split Matrix)</span>
+          <span>Weekly Split Matrix</span>
           <span className="text-emerald-600 dark:text-emerald-400">
-            مستوى الإنجاز الأسبوعي: {weeklyPlan.completionPercentage}%
+            Weekly Completion: {weeklyPlan.completionPercentage}%
           </span>
         </div>
 
@@ -88,7 +88,7 @@ export function WeeklyPlanWidget({ weeklyPlan, onToggleDay }: WeeklyPlanWidgetPr
                   <div className="flex items-center justify-between">
                     <span className="font-black text-foreground">{day.dayShort}</span>
                     {isRest ? (
-                      <span className="text-[10px] text-foreground-muted font-bold">راحة</span>
+                      <span className="text-[10px] text-foreground-muted font-bold">Rest</span>
                     ) : isCompleted ? (
                       <span className="grid size-4 place-items-center rounded-full bg-emerald-500 text-white text-[9px] font-black">
                         ✓
@@ -113,7 +113,7 @@ export function WeeklyPlanWidget({ weeklyPlan, onToggleDay }: WeeklyPlanWidgetPr
                         : 'bg-primary text-white hover:bg-primary/90'
                     }`}
                   >
-                    {isCompleted ? 'مكتمل ✓' : 'تحديد كمنجز'}
+                    {isCompleted ? 'Completed ✓' : 'Mark as Done'}
                   </button>
                 )}
               </div>

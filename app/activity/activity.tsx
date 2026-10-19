@@ -180,7 +180,7 @@ export function ActivityPage() {
                                 <span
                                   className={`badge ${item.kind === 'workout' ? 'badge-primary' : 'badge-success'} text-[10px]`}
                                 >
-                                  {item.kind === 'workout' ? 'تمرين (Workout)' : 'وجبة (Meal)'}
+                                  {item.kind === 'workout' ? 'Workout' : 'Meal'}
                                 </span>
                               </div>
                               <p className="mt-0.5 text-xs text-foreground-muted">
@@ -251,7 +251,7 @@ export function ActivityPage() {
                           selectedItem.kind === 'workout' ? 'badge-primary' : 'badge-success'
                         } text-[10px]`}
                       >
-                        {selectedItem.kind === 'workout' ? 'تمرين مكتمل' : 'وجبة مسجلة'}
+                        {selectedItem.kind === 'workout' ? 'Completed Workout' : 'Logged Meal'}
                       </span>
                       {selectedItem.workoutDetails?.level && (
                         <span className="badge badge-secondary text-[10px]">
@@ -297,19 +297,19 @@ export function ActivityPage() {
                   {/* Metric Cards Grid */}
                   <div className="grid grid-cols-3 gap-2.5">
                     <div className="rounded-2xl bg-blue-500/10 p-3 text-center border border-blue-500/20">
-                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">المدة</p>
+                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">Duration</p>
                       <p className="text-base font-black text-foreground mt-0.5">
                         {selectedItem.duration || 30} min
                       </p>
                     </div>
                     <div className="rounded-2xl bg-amber-500/10 p-3 text-center border border-amber-500/20">
-                      <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase">السعرات المحروقة</p>
+                      <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase">Calories Burned</p>
                       <p className="text-base font-black text-foreground mt-0.5">
                         {selectedItem.calories || 260} kcal
                       </p>
                     </div>
                     <div className="rounded-2xl bg-emerald-500/10 p-3 text-center border border-emerald-500/20">
-                      <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">المجموعات والتمارين</p>
+                      <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Sets & Exercises</p>
                       <p className="text-base font-black text-foreground mt-0.5">
                         {selectedItem.workoutDetails?.sets || 4} sets · {selectedItem.workoutDetails?.exercises || 6} ex
                       </p>
@@ -318,10 +318,10 @@ export function ActivityPage() {
 
                   {/* Workout description */}
                   <div className="rounded-2xl bg-slate-100/60 p-4 dark:bg-slate-800/40 border border-border/50 space-y-1.5">
-                    <p className="text-xs font-bold text-foreground">وصف الجلسة التدريبية</p>
+                    <p className="text-xs font-bold text-foreground">Session Description</p>
                     <p className="text-xs text-foreground-muted leading-relaxed">
                       {selectedItem.workoutDetails?.description ||
-                        `${selectedItem.title} - جلسة تدريبية مكثفة مصممة لزيادة القوة البدنية وتحسين التحمل العضلي ومعدل الحرق.`}
+                        `${selectedItem.title} - Focused athletic training session engineered to build functional strength, muscular endurance, and metabolic output.`}
                     </p>
                   </div>
 
@@ -342,14 +342,14 @@ export function ActivityPage() {
                       onClick={() => setSelectedItem(null)}
                       className="btn-ghost !text-xs !h-10"
                     >
-                      إغلاق
+                      Close
                     </button>
                     <Link
                       href={`/workouts/${selectedItem.targetId || 'w1'}`}
                       className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-2 shadow-xs"
                     >
                       <PlayCircle className="size-4" />
-                      فتح صفحة التمرين بالكامل
+                      Open Full Workout
                       <ArrowRight className="size-3.5" />
                     </Link>
                   </div>
@@ -362,7 +362,7 @@ export function ActivityPage() {
                   {/* Macros Grid */}
                   <div className="grid grid-cols-4 gap-2 text-center">
                     <div className="rounded-2xl bg-slate-100/70 p-3 dark:bg-slate-800/60 border border-border/50">
-                      <p className="text-[10px] font-bold text-foreground-muted uppercase">السعرات</p>
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">Calories</p>
                       <p className="text-base font-black text-foreground mt-0.5">
                         {selectedItem.calories || 350}
                       </p>
@@ -370,52 +370,52 @@ export function ActivityPage() {
                     </div>
 
                     <div className="rounded-2xl bg-blue-500/10 p-3 border border-blue-500/20">
-                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">بروتين</p>
+                      <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">Protein</p>
                       <p className="text-base font-black text-blue-600 dark:text-blue-400 mt-0.5">
                         {selectedItem.mealDetails?.protein || 32}g
                       </p>
-                      <span className="text-[9px] text-foreground-muted">عضلات</span>
+                      <span className="text-[9px] text-foreground-muted">Muscle</span>
                     </div>
 
                     <div className="rounded-2xl bg-amber-500/10 p-3 border border-amber-500/20">
-                      <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase">كارب</p>
+                      <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase">Carbs</p>
                       <p className="text-base font-black text-amber-600 dark:text-amber-400 mt-0.5">
                         {selectedItem.mealDetails?.carbs || 45}g
                       </p>
-                      <span className="text-[9px] text-foreground-muted">طاقة</span>
+                      <span className="text-[9px] text-foreground-muted">Energy</span>
                     </div>
 
                     <div className="rounded-2xl bg-emerald-500/10 p-3 border border-emerald-500/20">
-                      <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">دهون</p>
+                      <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Fats</p>
                       <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {selectedItem.mealDetails?.fat || 12}g
                       </p>
-                      <span className="text-[9px] text-foreground-muted">هرمونات</span>
+                      <span className="text-[9px] text-foreground-muted">Hormones</span>
                     </div>
                   </div>
 
                   {/* Nutrition Progress Distribution */}
                   <div className="space-y-1.5 rounded-2xl bg-slate-100/50 p-3.5 dark:bg-slate-800/30 border border-border/40">
                     <div className="flex items-center justify-between text-xs font-bold text-foreground">
-                      <span>توزيع المغذيات الكبرى (Macros Ratio)</span>
+                      <span>Macronutrient Ratio</span>
                       <span className="text-[11px] text-foreground-muted">
-                        وقت التحضير: {selectedItem.mealDetails?.prepTime || 15} دقيقة
+                        Prep Time: {selectedItem.mealDetails?.prepTime || 15} min
                       </span>
                     </div>
                     <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                      <div className="bg-blue-500" style={{ width: '40%' }} title="بروتين" />
-                      <div className="bg-amber-500" style={{ width: '40%' }} title="كارب" />
-                      <div className="bg-emerald-500" style={{ width: '20%' }} title="دهون" />
+                      <div className="bg-blue-500" style={{ width: '40%' }} title="Protein" />
+                      <div className="bg-amber-500" style={{ width: '40%' }} title="Carbs" />
+                      <div className="bg-emerald-500" style={{ width: '20%' }} title="Fats" />
                     </div>
                     <div className="flex items-center justify-between text-[10px] font-semibold text-foreground-muted pt-1">
                       <span className="flex items-center gap-1">
-                        <span className="size-2 rounded-full bg-blue-500" /> بروتين 40%
+                        <span className="size-2 rounded-full bg-blue-500" /> Protein 40%
                       </span>
                       <span className="flex items-center gap-1">
-                        <span className="size-2 rounded-full bg-amber-500" /> كاربوهيدرات 40%
+                        <span className="size-2 rounded-full bg-amber-500" /> Carbs 40%
                       </span>
                       <span className="flex items-center gap-1">
-                        <span className="size-2 rounded-full bg-emerald-500" /> دهون صحية 20%
+                        <span className="size-2 rounded-full bg-emerald-500" /> Healthy Fats 20%
                       </span>
                     </div>
                   </div>
@@ -437,14 +437,14 @@ export function ActivityPage() {
                       onClick={() => setSelectedItem(null)}
                       className="btn-ghost !text-xs !h-10"
                     >
-                      إغلاق
+                      Close
                     </button>
                     <Link
                       href="/nutrition"
                       className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-2 shadow-xs"
                     >
                       <Utensils className="size-4" />
-                      الانتقال إلى سجل التغذية والوجبات
+                      Go to Nutrition Log
                       <ArrowRight className="size-3.5" />
                     </Link>
                   </div>

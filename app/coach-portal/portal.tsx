@@ -123,10 +123,10 @@ export function CoachPortalPage() {
       if (res.client) {
         setSelectedClient(res.client)
         setClients((prev) => prev.map((c) => (c.id === res.client!.id ? res.client! : c)))
-        showToast('تم تحديث حالة تمرين اللاعب بنجاح!')
+        showToast("Athlete's workout status updated successfully!")
       }
     } catch {
-      showToast('تعذر تحديث التمرين')
+      showToast('Could not update workout status')
     }
   }
 
@@ -137,10 +137,10 @@ export function CoachPortalPage() {
       if (res.client) {
         setSelectedClient(res.client)
         setClients((prev) => prev.map((c) => (c.id === res.client!.id ? res.client! : c)))
-        showToast('تم تحديث حالة وجبة اللاعب بنجاح!')
+        showToast("Athlete's meal status updated successfully!")
       }
     } catch {
-      showToast('تعذر تحديث الوجبة')
+      showToast('Could not update meal status')
     }
   }
 
@@ -368,15 +368,15 @@ export function CoachPortalPage() {
                               <span className="text-emerald-600 dark:text-emerald-400">{plan.completionPercentage}%</span>
                             </div>
                             <div className="mt-1 flex items-center justify-between text-[10px] text-foreground-muted font-semibold">
-                              <span>أتمّ {plan.completedWorkoutsCount} من {plan.totalWorkoutsCount}</span>
-                              <span className="text-blue-600 dark:text-blue-400">متبقي {plan.remainingWorkoutsCount}</span>
+                              <span>{plan.completedWorkoutsCount} of {plan.totalWorkoutsCount} completed</span>
+                              <span className="text-blue-600 dark:text-blue-400">{plan.remainingWorkoutsCount} remaining</span>
                             </div>
                             {/* 7-day mini split dots */}
                             <div className="mt-2 flex items-center gap-1">
                               {plan.splitDays.map((d) => (
                                 <span
                                   key={d.id}
-                                  title={`${d.dayShort}: ${d.title} (${d.status === 'completed' ? 'تم الإنجاز' : d.status === 'remaining' ? 'متبقي' : 'يوم راحة'})`}
+                                  title={`${d.dayShort}: ${d.title} (${d.status === 'completed' ? 'Completed' : d.status === 'remaining' ? 'Remaining' : 'Rest Day'})`}
                                   className={`h-2 flex-1 rounded-full transition ${
                                     d.status === 'completed'
                                       ? 'bg-emerald-500'
@@ -423,10 +423,10 @@ export function CoachPortalPage() {
                           <button
                             onClick={() => openClientDetail(client, 'program')}
                             className="btn btn-primary !h-8 !px-3 !text-xs !font-bold inline-flex items-center gap-1.5 shadow-xs"
-                            title="عرض وتعديل البرنامج والمخطط والوجبات"
+                            title="View and edit program split & meals"
                           >
                             <CalendarDays className="size-3.5" />
-                            <span>البرنامج والوجبات</span>
+                            <span>Program & Meals</span>
                           </button>
 
                           <button
@@ -440,7 +440,7 @@ export function CoachPortalPage() {
                           <button
                             onClick={() => openClientDetail(client, 'overview')}
                             className="btn-outline !h-8 !px-2.5 !text-xs !font-bold rounded-lg hover:border-primary transition"
-                            title="إدارة الملاحظات والحالة"
+                            title="Manage notes and status"
                           >
                             Manage
                           </button>
@@ -591,7 +591,7 @@ export function CoachPortalPage() {
                     }}
                     className="btn-outline !text-xs !h-9 inline-flex items-center gap-1.5"
                   >
-                    <MessageCircle className="size-3.5" /> رسالة للاعب
+                    <MessageCircle className="size-3.5" /> Message Athlete
                   </button>
 
                   <button
@@ -615,10 +615,10 @@ export function CoachPortalPage() {
                   }`}
                 >
                   <CalendarDays className="size-3.5" />
-                  برنامج المتدرب والمخطط والوجبات
+                  Client Program & Meals Plan
                   {selectedClient.weeklyPlan && (
                     <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px]">
-                      {selectedClient.weeklyPlan.completedWorkoutsCount}/{selectedClient.weeklyPlan.totalWorkoutsCount} أتمّ
+                      {selectedClient.weeklyPlan.completedWorkoutsCount}/{selectedClient.weeklyPlan.totalWorkoutsCount} Done
                     </span>
                   )}
                 </button>
@@ -633,7 +633,7 @@ export function CoachPortalPage() {
                   }`}
                 >
                   <Activity className="size-3.5" />
-                  بيانات المتدرب وملاحظات الكوتش
+                  Client Telemetry & Coach Notes
                 </button>
               </div>
 
@@ -656,22 +656,22 @@ export function CoachPortalPage() {
                   {/* Client Metrics */}
                   <div className="grid grid-cols-3 gap-3">
                     <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-4 text-center border border-border/40">
-                      <p className="text-[10px] font-bold text-foreground-muted uppercase">نسبة الالتزام</p>
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">Adherence Rate</p>
                       <p className="text-xl font-black text-primary mt-1">{selectedClient.adherence}%</p>
                     </div>
                     <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-4 text-center border border-border/40">
-                      <p className="text-[10px] font-bold text-foreground-muted uppercase">الوزن الحالي</p>
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">Current Weight</p>
                       <p className="text-xl font-black text-foreground mt-1">{selectedClient.weight} kg</p>
                     </div>
                     <div className="rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 p-4 text-center border border-border/40">
-                      <p className="text-[10px] font-bold text-foreground-muted uppercase">متوسط السعرات</p>
+                      <p className="text-[10px] font-bold text-foreground-muted uppercase">Avg Calories</p>
                       <p className="text-xl font-black text-foreground mt-1">{selectedClient.caloriesAvg} kcal</p>
                     </div>
                   </div>
 
                   {/* Status Selector */}
                   <div>
-                    <label className="text-xs font-bold text-foreground mb-1.5 block">حالة المتدرب</label>
+                    <label className="text-xs font-bold text-foreground mb-1.5 block">Athlete Status</label>
                     <div className="flex gap-2">
                       {(['On track', 'Review', 'Needs attention'] as const).map((st) => (
                         <button
@@ -688,7 +688,7 @@ export function CoachPortalPage() {
                               : 'border-border bg-slate-100/40 dark:bg-slate-800/40 text-foreground-muted'
                           }`}
                         >
-                          {st === 'On track' ? 'ملتزم (On track)' : st === 'Review' ? 'تحت المراجعة (Review)' : 'يحتاج اهتمام (Needs attention)'}
+                          {st === 'On track' ? 'On track' : st === 'Review' ? 'Needs Review' : 'Needs attention'}
                         </button>
                       ))}
                     </div>
@@ -697,13 +697,13 @@ export function CoachPortalPage() {
                   {/* Coach Notes */}
                   <div>
                     <label className="text-xs font-bold text-foreground mb-1.5 block">
-                      ملاحظات وتوجيهات الكوتش الخاصة بالمتدرب (مستمرة ومحفوظة)
+                      Coach Private Notes & Directives (Persistent)
                     </label>
                     <textarea
                       rows={4}
                       value={clientNotes}
                       onChange={(e) => setClientNotes(e.target.value)}
-                      placeholder="أضف ملاحظات خاصة حول تكنيك التمارين، تعديلات الوجبات والسعرات، وتوجيهات الأسبوع القادم…"
+                      placeholder="Add private coaching notes on lifting mechanics, caloric adjustments, and upcoming week focus…"
                       className="w-full rounded-2xl border border-border bg-slate-100/60 dark:bg-slate-800/50 p-3.5 text-xs font-medium text-foreground outline-none transition focus:border-primary"
                     />
                   </div>
@@ -711,14 +711,14 @@ export function CoachPortalPage() {
                   {/* Actions Footer */}
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/70">
                     <button onClick={() => setSelectedClient(null)} className="btn-ghost !text-xs !h-10">
-                      إغلاق
+                      Close
                     </button>
                     <button
                       onClick={handleSaveClientDetails}
                       disabled={savingNotes}
                       className="btn btn-primary !text-xs !h-10 inline-flex items-center gap-1.5"
                     >
-                      <Save className="size-3.5" /> {savingNotes ? 'جارٍ الحفظ…' : 'حفظ الملاحظات والحالة'}
+                      <Save className="size-3.5" /> {savingNotes ? 'Saving…' : 'Save Notes & Status'}
                     </button>
                   </div>
                 </div>

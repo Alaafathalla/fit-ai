@@ -99,12 +99,12 @@ export function PlannerPage() {
       const targetDay = updated.splitDays.find((d) => d.id === dayId)
       setToastMsg(
         targetDay?.status === 'completed'
-          ? 'عاش! تم إنجاز التمرين وتحديث المتبقي بنجاح ✓'
-          : 'تم تعديل حالة التمرين إلى متبقي'
+          ? 'Great job! Workout completed and stats updated ✓'
+          : 'Workout marked as pending'
       )
       setTimeout(() => setToastMsg(''), 3000)
     } catch {
-      setToastMsg('تعذر حفظ حالة التمرين.')
+      setToastMsg('Could not update workout status.')
       setTimeout(() => setToastMsg(''), 2500)
     }
   }
@@ -116,12 +116,12 @@ export function PlannerPage() {
       const targetMeal = updated.meals.find((m) => m.id === mealId)
       setToastMsg(
         targetMeal?.status === 'completed'
-          ? 'صحة وهنا! تم تسجيل تناول الوجبة بنجاح ✓'
-          : 'تم تعديل حالة الوجبة إلى متبقية'
+          ? 'Nice! Meal logged successfully ✓'
+          : 'Meal marked as pending'
       )
       setTimeout(() => setToastMsg(''), 3000)
     } catch {
-      setToastMsg('تعذر حفظ حالة الوجبة.')
+      setToastMsg('Could not update meal status.')
       setTimeout(() => setToastMsg(''), 2500)
     }
   }
@@ -221,10 +221,10 @@ export function PlannerPage() {
             }`}
           >
             <CalendarDays className="size-3.5" />
-            برنامجي الأسبوعي ومتابعة الإنجاز والوجبات
+            Weekly Program & Nutrition Tracker
             {weeklyPlan && (
               <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px]">
-                {weeklyPlan.completedWorkoutsCount}/{weeklyPlan.totalWorkoutsCount} أتممت
+                {weeklyPlan.completedWorkoutsCount}/{weeklyPlan.totalWorkoutsCount} Done
               </span>
             )}
           </button>
@@ -238,7 +238,7 @@ export function PlannerPage() {
                 : 'bg-slate-100 dark:bg-slate-800 text-foreground-muted hover:text-foreground'
             }`}
           >
-            تفاصيل البروتوكول والتمارين (AI Protocol)
+            AI Protocol & Prescribed Exercises
           </button>
 
           <button
@@ -250,7 +250,7 @@ export function PlannerPage() {
                 : 'bg-slate-100 dark:bg-slate-800 text-foreground-muted hover:text-foreground'
             }`}
           >
-            الجدول والتقويم الأسبوعي (Weekly Matrix)
+            Weekly Schedule & Calendar Matrix
           </button>
         </div>
 

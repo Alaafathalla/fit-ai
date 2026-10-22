@@ -46,7 +46,9 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                  active ? 'bg-primary-light text-primary' : 'text-foreground-muted hover:bg-background-alt hover:text-foreground'
+                  active
+                    ? 'bg-primary-light text-primary'
+                    : 'text-foreground-muted hover:bg-background-alt hover:text-foreground'
                 }`}
               >
                 {item.label}
@@ -67,7 +69,10 @@ export function SiteHeader() {
               Register
             </Link>
           )}
-          <Link href={accountHref} className="btn-primary !h-9 !px-4 !text-xs !font-bold">
+          <Link
+            href={accountHref}
+            className="btn-primary !h-9 !px-4 !text-xs !font-bold shadow-md shadow-purple-600/20"
+          >
             {accountLabel}
           </Link>
         </div>
@@ -93,10 +98,16 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/contact" className="rounded-xl px-3 py-2.5 text-sm font-bold text-foreground hover:bg-background-alt">
+            <Link
+              href="/contact"
+              className="rounded-xl px-3 py-2.5 text-sm font-bold text-foreground hover:bg-background-alt"
+            >
               Contact
             </Link>
-            <Link href="/help" className="rounded-xl px-3 py-2.5 text-sm font-bold text-foreground hover:bg-background-alt">
+            <Link
+              href="/help"
+              className="rounded-xl px-3 py-2.5 text-sm font-bold text-foreground hover:bg-background-alt"
+            >
               Help Center
             </Link>
           </nav>

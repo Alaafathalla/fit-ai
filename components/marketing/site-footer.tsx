@@ -36,8 +36,8 @@ export function SiteFooter() {
     <footer className="border-t border-slate-800 bg-[#090d16] text-slate-300">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.2fr_2fr]">
         <div>
-          <Link href="/" className="inline-flex rounded-xl bg-white px-3 py-2">
-            <Logo />
+          <Link href="/" className="inline-flex" aria-label="FitAI home">
+            <Logo light />
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-slate-400">
             FitAI is a training workspace for athletes and coaches. Track load, nutrition, and recovery in one place.

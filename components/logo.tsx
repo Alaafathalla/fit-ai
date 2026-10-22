@@ -1,4 +1,4 @@
-export function Logo() {
+export function Logo({ light = false }: { light?: boolean } = {}) {
   return (
     <div className="flex items-center gap-2.5 select-none group">
       <div className="flex size-9 items-center justify-center rounded-xl bg-[#090d16] text-white border border-slate-800/80 shadow-xs transition-transform duration-200 group-hover:scale-105">
@@ -22,7 +22,7 @@ export function Logo() {
         </svg>
       </div>
       <div className="flex items-baseline tracking-tight">
-        <span className="text-base font-black text-foreground">FIT</span>
+        <span className={`text-base font-black ${light ? 'text-white' : 'text-foreground'}`}>FIT</span>
         <span className="text-base font-black text-primary">AI</span>
       </div>
     </div>

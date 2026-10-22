@@ -36,35 +36,43 @@ export function getStoredAccent(): string {
   return val
 }
 
+let isApplyingTheme = false
+
 export function applyTheme(mode: ThemeMode, accentId: string = 'purple') {
   if (typeof window === 'undefined') return
+  if (isApplyingTheme) return
 
-  const root = document.documentElement
-
-  // 1. Toggle dark class
-  if (mode === 'dark') {
-    root.classList.add('dark')
-  } else {
-    root.classList.remove('dark')
-  }
-
-  // 2. Set accent CSS variables
-  const accent = ACCENT_COLORS.find((a) => a.id === accentId) || ACCENT_COLORS[0]
-  root.style.setProperty('--primary', accent.hex)
-  root.style.setProperty('--primary-light', accent.light)
-  root.style.setProperty('--primary-dark', accent.dark)
-  root.style.setProperty('--ring', accent.hex)
-
-  // 3. Save to localStorage
+  isApplyingTheme = true
   try {
-    localStorage.setItem(THEME_KEY, mode)
-    localStorage.setItem(ACCENT_KEY, accentId)
-  } catch {}
+    const root = document.documentElement
 
-  // 4. Broadcast event
-  window.dispatchEvent(
-    new CustomEvent('fitai-theme-changed', {
-      detail: { mode, accentId },
-    })
-  )
+    // 1. Toggle dark class
+    if (mode === 'dark') {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+
+    // 2. Set accent CSS variables
+    const accent = ACCENT_COLORS.find((a) => a.id === accentId) || ACCENT_COLORS[0]
+    root.style.setProperty('--primary', accent.hex)
+    root.style.setProperty('--primary-light', accent.light)
+    root.style.setProperty('--primary-dark', accent.dark)
+    root.style.setProperty('--ring', accent.hex)
+
+    // 3. Save to localStorage
+    try {
+      localStorage.setItem(THEME_KEY, mode)
+      localStorage.setItem(ACCENT_KEY, accentId)
+    } catch {}
+
+    // 4. Broadcast event
+    window.dispatchEvent(
+      new CustomEvent('fitai-theme-changed', {
+        detail: { mode, accentId },
+      })
+    )
+  } finally {
+    isApplyingTheme = false
+  }
 }

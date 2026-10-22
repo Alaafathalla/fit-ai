@@ -82,15 +82,6 @@ export function Shell({ title, subtitle, children, allowedRoles }: ShellProps) {
     const mode = getStoredThemeMode()
     const accent = getStoredAccent()
     applyTheme(mode, accent)
-
-    const onThemeChange = (e: Event) => {
-      const custom = e as CustomEvent<{ mode: 'light' | 'dark'; accentId: string }>
-      if (custom.detail) {
-        applyTheme(custom.detail.mode, custom.detail.accentId)
-      }
-    }
-    window.addEventListener('fitai-theme-changed', onThemeChange)
-    return () => window.removeEventListener('fitai-theme-changed', onThemeChange)
   }, [])
 
   useEffect(() => {

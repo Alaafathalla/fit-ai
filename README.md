@@ -1,29 +1,50 @@
-# FitAI Coach — Frontend + Local Fake API
+# FitAI Coach
 
-This build is fully standalone. The Prisma/PostgreSQL backend, Next.js `app/api/*`
-routes, database setup, and external backend configuration have been removed.
+A fitness dashboard demo with workout, nutrition, progress and coaching interfaces.
 
-All app data now comes from `lib/fake-api.ts` through the existing `@/lib/api`
-imports. Demo mutations such as profile edits, hydration, meal logs, completed
-workouts, and coach messages are stored in browser `localStorage`.
+[Live demo](https://fit-ai-delta-brown.vercel.app/)
 
-## Run
+## Included interfaces
 
-```bash
-pnpm install
-pnpm dev
-```
-or:
+- Workout, nutrition, planner and progress interfaces.
+- User and coach-facing routes.
+- Local fake API used through the shared API module.
+- Demo mutations persisted in browser localStorage.
 
+## Built with
+
+Next.js, React, TypeScript and Tailwind CSS.
+
+## Run locally
+
+Install a Node.js version supported by the framework dependencies in `package.json`.
 
 ```bash
 npm install
 npm run dev
 ```
 
-No database and no `.env.local` API URL are required.
+Open the local URL printed by the development server.
 
-## Reset demo data
+## Production build
 
-Clear the browser key `fitai-fake-api-v1`, or call `resetFakeApi()` from
-`lib/fake-api.ts` during development.
+```bash
+npm run build
+```
+
+## Project structure
+
+- `app/`
+- `components/`
+- `lib/`
+- `prisma/`
+- `public/`
+- `scripts/`
+
+## Other scripts
+
+- `npm run typecheck`
+
+## Demo scope
+
+Demo data is handled by a local fake API and persisted in browser localStorage. This is not a live AI coaching service or a production health-data backend.
